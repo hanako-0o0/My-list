@@ -23,10 +23,12 @@ type Item = {
   comment: string;
   currentEpisode: number;
   totalEpisode: number;
-  season?: number | null;   // ← 追加
+  season?: number | null; 
   genre?: "アニメ" | "ドラマ";
   imageUrl?: string;
+  userId: string; // 必須
 };
+
 
 
 function StarRating({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
@@ -85,23 +87,26 @@ export default function Home() {
 
 
   const addItem = async () => {
-    if (!userId) return;
-    const newItem = {
-      title: "新しい作品",
-      status: "planToWatch",
-      rating: 0,
-      comment: "",
-      currentEpisode: 0,
-      totalEpisode: 12,
-      season: null,        // ← 追加
-      genre: "アニメ",
-      userId,
-    };
+  if (!userId) return;
 
+  const newItem: Item = {
+    id: "", // 後で Firebase で取得
+    title: "新しい作品",
+    status: "planToWatch", // 文字列ではなくリテラル型
+    rating: 0,
+    comment: "",
+    currentEpisode: 0,
+    totalEpisode: 12,
+    season: null,
+    genre: "アニメ",
+    userId,
+    imageUrl: undefined,
+  };
 
   const docRef = await addDoc(collection(db, "items"), newItem);
-    setItems((prev) => [...prev, { id: docRef.id, ...newItem }]);
-  };
+  setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
+};
+
 
   const updateItem = async (id: string, updated: Partial<Item>) => {
     const itemRef = doc(db, "items", id);
