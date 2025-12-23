@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDOJwei_mC1Y0V6rCUfY07sdOVOC3GzTvs",
-  authDomain: "my-list-app-7eb36.firebaseapp.com",
-  projectId: "my-list-app-7eb36",
-  storageBucket: "my-list-app-7eb36.firebasestorage.app",
-  messagingSenderId: "214320098868",
-  appId: "1:214320098868:web:562a9a96b13e49cc3f2461"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Firebase 初期化
