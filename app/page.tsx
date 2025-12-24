@@ -57,18 +57,19 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUserId(user.uid);
-      setLoading(false);
+      setLoading(false); // 🔹 ユーザー情報が来たら loading を false に
     });
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!loading && !userId) {
-      router.push("/auth");
-    }
-  }, [loading, userId, router]);
+  // 🔹 loading 中は何も表示しない
+  if (loading) return <div>Loading...</div>;
 
-  if (loading || !userId) return <div>Loading...</div>;
+  // 🔹 ログインしていなければ /auth にリダイレクト
+  if (!userId) {
+    router.push("/auth");
+    return null;
+  }
 
   // Firestore からデータ取得
   useEffect(() => {
