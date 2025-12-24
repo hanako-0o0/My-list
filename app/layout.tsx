@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -13,23 +14,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "My List",
-  description: "アニメ・ドラマの視聴管理ができるWebアプリ",
-  verification: {
-    google: "oUZ1WAD4eHzdFlGBHDszXRsLJ8EMMQGMA5BtY5XujYk",
+  title: "マイアニメリスト・マイドラマリスト - My List アプリ",
+  description: "マイアニメリスト、マイドラマリストとしてアニメ・ドラマの視聴管理ができるアプリです。",
+  openGraph: {
+    title: "マイアニメリスト・マイドラマリスト - My List アプリ",
+    description: "アニメ・ドラマの視聴状況を簡単に管理できるMy Listアプリです。",
+    url: "https://my-list-xi.vercel.app",
+    siteName: "My List",
+    images: [
+      {
+        url: "https://my-list-xi.vercel.app/og-image.png", // もしOG画像がない場合は省略可
+        width: 1200,
+        height: 630,
+        alt: "My List サイト画像",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "マイアニメリスト・マイドラマリスト - My List アプリ",
+    description: "アニメ・ドラマの視聴状況を簡単に管理できるMy Listアプリです。",
+    images: ["https://my-list-xi.vercel.app/og-image.png"],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
