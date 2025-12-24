@@ -51,89 +51,73 @@ export default function Home() {
   const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">("all");
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // 🔹 追加
+  const [loading, setLoading] = useState(true);
 
   // 🔹 ログイン状態チェック
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUserId(user.uid);
-      setLoading(false); // 🔹 ユーザー情報が来たら loading を false に
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // 🔹 loading 中は何も表示しない
-  if (loading) return <div>Loading...</div>;
-
   // 🔹 ログインしていなければ /auth にリダイレクト
-  if (!userId) {
-    router.push("/auth");
-    return null;
-  }
+  useEffect(() => {
+    if (!loading && !userId) {
+      router.push("/auth");
+    }
+  }, [loading, userId, router]);
 
   // Firestore からデータ取得
   useEffect(() => {
     if (!userId) return;
     const fetchData = async () => {
-      const q = query(collection(db, "items"), where("userId", "==", userId));
-      const snapshot = await getDocs(q);
-      const data: Item[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Item, "id">),
-      }));
-      setItems(data);
+      try {
+        const q = query(collection(db, "items"), where("userId", "==", userId));
+        const snapshot = await getDocs(q);
+        const data: Item[] = snapshot.docs.map((doc) => {
+          const docData = doc.data() as Omit<Item, "id">;
+          return { id: doc.id, ...docData };
+        });
+        setItems(data);
+      } catch (err) {
+        console.error("Failed to fetch items:", err);
+      }
     };
     fetchData();
   }, [userId]);
 
   const filteredItems =
-  items
-    .filter((item) => filter === "all" || item.status === filter)
-    .filter((item) => genreFilter === "all" || item.genre === genreFilter)
-    .slice()
-    .sort((a, b) => a.title.localeCompare(b.title));
-
+    items
+      .filter((item) => filter === "all" || item.status === filter)
+      .filter((item) => genreFilter === "all" || item.genre === genreFilter)
+      .slice()
+      .sort((a, b) => a.title.localeCompare(b.title));
 
   const addItem = async () => {
     if (!userId) return;
 
-    // まずローカルで新しいアイテムを作る（idは仮）
-    const tempId = `temp-${Date.now()}`;
-    const newItem: Item = {
-      id: tempId,
-      title: "新しい作品",
-      status: "planToWatch",
-      rating: 0,
-      comment: "",
-      currentEpisode: 0,
-      totalEpisode: 12,
-      season: null,
-      genre: "アニメ",
-      userId,
-      imageUrl: undefined,
-    };
-
-    // 画面上に即座に追加
-    setItems((prev) => [...prev, newItem]);
-
     try {
-      // Firestore に保存
-      const docRef = await addDoc(collection(db, "items"), {
-        ...newItem,
-        id: undefined, // Firestore に id を含めない
-      });
-
-      // Firestore の id を反映
-      setItems((prev) =>
-        prev.map((item) => (item.id === tempId ? { ...item, id: docRef.id } : item))
-      );
-    } catch (error) {
-      console.error("Failed to add item:", error);
-      // 追加に失敗した場合はローカルリストから削除
-      setItems((prev) => prev.filter((item) => item.id !== tempId));
+      const newItem: Item = {
+        id: "", 
+        title: "新しい作品",
+        status: "planToWatch",
+        rating: 0,
+        comment: "",
+        currentEpisode: 0,
+        totalEpisode: 12,
+        season: null,
+        genre: "アニメ",
+        userId,
+        imageUrl: undefined,
+      };
+      const docRef = await addDoc(collection(db, "items"), newItem);
+      setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
+    } catch (err) {
+      console.error("Failed to add item:", err);
     }
   };
-
 
   const updateItem = async (id: string, updated: Partial<Item>) => {
     const itemRef = doc(db, "items", id);
@@ -162,6 +146,8 @@ export default function Home() {
     await signOut(auth);
     router.push("/auth");
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <main className="min-h-screen bg-sky-50 p-4">
@@ -224,7 +210,6 @@ export default function Home() {
           );
         })}
       </div>
-
 
       {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -319,7 +304,6 @@ export default function Home() {
               rows={2}
             />
 
-
             {/* 話数 + 期 */}
             <div className="flex items-center gap-1 text-xs mt-1">
               <input
@@ -355,7 +339,6 @@ export default function Home() {
               <span>話</span>
             </div>
 
-
             {/* 削除 */}
             <button
               onClick={() => removeItem(item.id)}
@@ -378,5 +361,3 @@ export default function Home() {
     </main>
   );
 }
-
-
