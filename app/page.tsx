@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
+import { auth, db } from "../firebase"; // firebase.ts の位置に合わせる
 import {
   collection,
   query,
@@ -26,8 +26,10 @@ type Item = {
   season?: number | null; 
   genre?: "アニメ" | "ドラマ";
   imageUrl?: string;
-  userId: string;
+  userId: string; // 必須
 };
+
+
 
 function StarRating({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
   const stars = [];
@@ -51,25 +53,15 @@ export default function Home() {
   const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">("all");
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // 🔹 追加
 
-  // 🔹 ログイン状態チェック
+  // ログイン状態チェック
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUserId(user.uid);
-      setLoading(false); // 🔹 ユーザー情報が来たら loading を false に
+      else router.push("/auth");
     });
     return () => unsubscribe();
-  }, []);
-
-  // 🔹 loading 中は何も表示しない
-  if (loading) return <div>Loading...</div>;
-
-  // 🔹 ログインしていなければ /auth にリダイレクト
-  if (!userId) {
-    router.push("/auth");
-    return null;
-  }
+  }, [router]);
 
   // Firestore からデータ取得
   useEffect(() => {
@@ -359,3 +351,5 @@ export default function Home() {
     </main>
   );
 }
+
+
