@@ -51,34 +51,29 @@ export default function Home() {
   const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">("all");
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 🔹 追加
 
   // 🔹 ログイン状態チェック
   useEffect(() => {
-    let isMounted = true;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (isMounted) {
-        if (user) setUserId(user.uid);
-        setLoading(false);
-      }
+      if (user) setUserId(user.uid);
+      setLoading(false); // 🔹 ユーザー情報が来たら loading を false に
     });
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
+  // 🔹 loading 中は何も表示しない
   if (loading) return <div>Loading...</div>;
 
   // 🔹 ログインしていなければ /auth にリダイレクト
-  useEffect(() => {
-    if (!loading && !userId) router.push("/auth");
-  }, [loading, userId, router]);
+  if (!userId) {
+    router.push("/auth");
+    return null;
+  }
 
   // Firestore からデータ取得
   useEffect(() => {
     if (!userId) return;
-    let isMounted = true;
     const fetchData = async () => {
       const q = query(collection(db, "items"), where("userId", "==", userId));
       const snapshot = await getDocs(q);
@@ -86,40 +81,40 @@ export default function Home() {
         id: doc.id,
         ...(doc.data() as Omit<Item, "id">),
       }));
-      if (isMounted) setItems(data);
+      setItems(data);
     };
     fetchData();
-    return () => {
-      isMounted = false;
-    };
   }, [userId]);
 
-  const filteredItems = items
+  const filteredItems =
+  items
     .filter((item) => filter === "all" || item.status === filter)
     .filter((item) => genreFilter === "all" || item.genre === genreFilter)
     .slice()
     .sort((a, b) => a.title.localeCompare(b.title));
 
+
   const addItem = async () => {
-    if (!userId) return;
+  if (!userId) return;
 
-    const newItem: Item = {
-      id: "",
-      title: "新しい作品",
-      status: "planToWatch",
-      rating: 0,
-      comment: "",
-      currentEpisode: 0,
-      totalEpisode: 12,
-      season: null,
-      genre: "アニメ",
-      userId,
-      imageUrl: undefined,
-    };
-
-    const docRef = await addDoc(collection(db, "items"), newItem);
-    setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
+  const newItem: Item = {
+    id: "", // 後で Firebase で取得
+    title: "新しい作品",
+    status: "planToWatch", // 文字列ではなくリテラル型
+    rating: 0,
+    comment: "",
+    currentEpisode: 0,
+    totalEpisode: 12,
+    season: null,
+    genre: "アニメ",
+    userId,
+    imageUrl: undefined,
   };
+
+  const docRef = await addDoc(collection(db, "items"), newItem);
+  setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
+};
+
 
   const updateItem = async (id: string, updated: Partial<Item>) => {
     const itemRef = doc(db, "items", id);
@@ -153,6 +148,7 @@ export default function Home() {
     <main className="min-h-screen bg-sky-50 p-4">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">My List</h1>
 
+      {/* ログアウトボタン */}
       <button
         onClick={handleLogout}
         className="fixed top-6 right-6 px-3 py-1 bg-red-400 text-white rounded hover:bg-red-500"
@@ -160,6 +156,7 @@ export default function Home() {
         ログアウト
       </button>
 
+      {/* 状態タブ */}
       <div className="flex gap-2 mb-4">
         {["all", "planToWatch", "watching", "completed", "dropped"].map((f) => {
           const labels: Record<string, string> = {
@@ -184,6 +181,7 @@ export default function Home() {
         })}
       </div>
 
+      {/* ジャンルサブタブ */}
       <div className="flex gap-2 mb-4 ml-1">
         {["all", "アニメ", "ドラマ"].map((g) => {
           const labels: Record<string, string> = {
@@ -208,12 +206,15 @@ export default function Home() {
         })}
       </div>
 
+
+      {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
           <div
             key={item.id}
             className="bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
           >
+            {/* 画像表示 16:9 */}
             {item.imageUrl ? (
               <div className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-gray-100">
                 <img
@@ -228,6 +229,7 @@ export default function Home() {
               </div>
             )}
 
+            {/* 画像アップロード */}
             <input
               type="file"
               accept="image/*"
@@ -237,6 +239,7 @@ export default function Home() {
               className="text-xs mb-1"
             />
 
+            {/* タイトル */}
             <input
               type="text"
               value={item.title}
@@ -252,6 +255,7 @@ export default function Home() {
               className="w-full text-sm font-semibold text-gray-800 mb-1 border-b border-gray-300"
             />
 
+            {/* 状態 */}
             <select
               value={item.status}
               onChange={(e) =>
@@ -265,6 +269,7 @@ export default function Home() {
               <option value="dropped">やめた</option>
             </select>
 
+            {/* ジャンル */}
             <select
               value={item.genre || "アニメ"}
               onChange={(e) => updateItem(item.id, { genre: e.target.value as Item["genre"] })}
@@ -274,11 +279,13 @@ export default function Home() {
               <option value="ドラマ">ドラマ</option>
             </select>
 
+            {/* 星評価 */}
             <StarRating
               rating={item.rating}
               onChange={(r) => updateItem(item.id, { rating: r })}
             />
 
+            {/* コメント */}
             <textarea
               value={item.comment}
               onChange={(e) => {
@@ -293,6 +300,8 @@ export default function Home() {
               rows={2}
             />
 
+
+            {/* 話数 + 期 */}
             <div className="flex items-center gap-1 text-xs mt-1">
               <input
                 type="number"
@@ -327,6 +336,8 @@ export default function Home() {
               <span>話</span>
             </div>
 
+
+            {/* 削除 */}
             <button
               onClick={() => removeItem(item.id)}
               className="mt-1 text-red-500 text-xs hover:underline"
@@ -337,6 +348,7 @@ export default function Home() {
         ))}
       </div>
 
+      {/* ＋ボタン */}
       <button
         onClick={addItem}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-sky-400 text-white text-3xl shadow-lg hover:bg-sky-500"
@@ -347,3 +359,5 @@ export default function Home() {
     </main>
   );
 }
+
+
