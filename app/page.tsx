@@ -55,13 +55,30 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
 
   // ログイン状態チェック
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setUserId(user.uid);
-      else router.push("/auth");
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+      setLoading(false); // 読み込み完了
     });
     return () => unsubscribe();
-  }, [router]);
+  }, []);
+
+  if (loading) {
+    // ローディング中は何も表示せず待機
+    return <div>Loading...</div>;
+  }
+
+  // userId が null の場合のみ /auth にリダイレクト
+  if (!userId) {
+    router.push("/auth");
+    return null;
+  }
 
   // Firestore からデータ取得
   useEffect(() => {

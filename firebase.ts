@@ -1,6 +1,6 @@
 // firebase.ts
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -18,3 +18,8 @@ const app = initializeApp(firebaseConfig);
 // 各サービスのエクスポート
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// 🔹 永続化を設定（ブラウザを閉じてもログイン状態を維持）
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Failed to set persistence:", error);
+});
