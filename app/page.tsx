@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth, db } from "../firebase"; // firebase.ts の位置に合わせる
+import { auth, db } from "../firebase";
 import {
   collection,
   query,
@@ -12,7 +12,12 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signOut,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 type Item = {
@@ -23,15 +28,19 @@ type Item = {
   comment: string;
   currentEpisode: number;
   totalEpisode: number;
-  season?: number | null; 
+  season?: number | null;
   genre?: "アニメ" | "ドラマ";
   imageUrl?: string;
-  userId: string; // 必須
+  userId: string;
 };
 
-
-
-function StarRating({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
+function StarRating({
+  rating,
+  onChange,
+}: {
+  rating: number;
+  onChange: (r: number) => void;
+}) {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     stars.push(
@@ -50,31 +59,27 @@ function StarRating({ rating, onChange }: { rating: number; onChange: (r: number
 export default function Home() {
   const router = useRouter();
   const [filter, setFilter] = useState<"all" | Item["status"]>("all");
-  const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">("all");
+  const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">(
+    "all"
+  );
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-
-  // ログイン状態チェック
   const [loading, setLoading] = useState(true);
 
+  // 永続化してログイン状態を維持
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else {
-        setUserId(null);
-      }
-      setLoading(false); // 読み込み完了
-    });
-    return () => unsubscribe();
+    const initAuth = async () => {
+      await setPersistence(auth, browserLocalPersistence);
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) setUserId(user.uid);
+        setLoading(false);
+      });
+      return unsubscribe;
+    };
+    initAuth();
   }, []);
 
-  if (loading) {
-    // ローディング中は何も表示せず待機
-    return <div>Loading...</div>;
-  }
-
-  // userId が null の場合のみ /auth にリダイレクト
+  if (loading) return <div>Loading...</div>;
   if (!userId) {
     router.push("/auth");
     return null;
@@ -95,35 +100,32 @@ export default function Home() {
     fetchData();
   }, [userId]);
 
-  const filteredItems =
-  items
+  const filteredItems = items
     .filter((item) => filter === "all" || item.status === filter)
     .filter((item) => genreFilter === "all" || item.genre === genreFilter)
     .slice()
     .sort((a, b) => a.title.localeCompare(b.title));
 
-
   const addItem = async () => {
-  if (!userId) return;
+    if (!userId) return;
 
-  const newItem: Item = {
-    id: "", // 後で Firebase で取得
-    title: "新しい作品",
-    status: "planToWatch", // 文字列ではなくリテラル型
-    rating: 0,
-    comment: "",
-    currentEpisode: 0,
-    totalEpisode: 12,
-    season: null,
-    genre: "アニメ",
-    userId,
-    imageUrl: undefined,
+    const newItem: Item = {
+      id: "",
+      title: "新しい作品",
+      status: "planToWatch",
+      rating: 0,
+      comment: "",
+      currentEpisode: 0,
+      totalEpisode: 12,
+      season: null,
+      genre: "アニメ",
+      userId,
+      imageUrl: undefined,
+    };
+
+    const docRef = await addDoc(collection(db, "items"), newItem);
+    setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
   };
-
-  const docRef = await addDoc(collection(db, "items"), newItem);
-  setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
-};
-
 
   const updateItem = async (id: string, updated: Partial<Item>) => {
     const itemRef = doc(db, "items", id);
@@ -157,7 +159,6 @@ export default function Home() {
     <main className="min-h-screen bg-sky-50 p-4">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">My List</h1>
 
-      {/* ログアウトボタン */}
       <button
         onClick={handleLogout}
         className="fixed top-6 right-6 px-3 py-1 bg-red-400 text-white rounded hover:bg-red-500"
@@ -204,9 +205,7 @@ export default function Home() {
               key={g}
               onClick={() => setGenreFilter(g as any)}
               className={`px-3 py-0.5 rounded-full text-xs transition ${
-                isActive
-                  ? "bg-pink-400 text-white"
-                  : "bg-white text-gray-700 shadow"
+                isActive ? "bg-pink-400 text-white" : "bg-white text-gray-700 shadow"
               }`}
             >
               {labels[g]}
@@ -215,7 +214,6 @@ export default function Home() {
         })}
       </div>
 
-
       {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
@@ -223,7 +221,6 @@ export default function Home() {
             key={item.id}
             className="bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
           >
-            {/* 画像表示 16:9 */}
             {item.imageUrl ? (
               <div className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-gray-100">
                 <img
@@ -238,25 +235,26 @@ export default function Home() {
               </div>
             )}
 
-            {/* 画像アップロード */}
             <input
               type="file"
               accept="image/*"
               onChange={(e) => {
-                if (e.target.files?.[0]) handleImageUpload(item.id, e.target.files[0]);
+                if (e.target.files?.[0])
+                  handleImageUpload(item.id, e.target.files[0]);
               }}
               className="text-xs mb-1"
             />
 
-            {/* タイトル */}
             <input
               type="text"
               value={item.title}
-              onChange={(e) => {
+              onChange={(e) =>
                 setItems((prev) =>
-                  prev.map((it) => (it.id === item.id ? { ...it, title: e.target.value } : it))
-                );
-              }}
+                  prev.map((it) =>
+                    it.id === item.id ? { ...it, title: e.target.value } : it
+                  )
+                )
+              }
               onBlur={(e) => updateItem(item.id, { title: e.target.value })}
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.currentTarget.blur();
@@ -264,7 +262,6 @@ export default function Home() {
               className="w-full text-sm font-semibold text-gray-800 mb-1 border-b border-gray-300"
             />
 
-            {/* 状態 */}
             <select
               value={item.status}
               onChange={(e) =>
@@ -278,39 +275,36 @@ export default function Home() {
               <option value="dropped">やめた</option>
             </select>
 
-            {/* ジャンル */}
             <select
               value={item.genre || "アニメ"}
-              onChange={(e) => updateItem(item.id, { genre: e.target.value as Item["genre"] })}
+              onChange={(e) =>
+                updateItem(item.id, { genre: e.target.value as Item["genre"] })
+              }
               className="text-xs mb-1 border rounded px-1 py-0.5"
             >
               <option value="アニメ">アニメ</option>
               <option value="ドラマ">ドラマ</option>
             </select>
 
-            {/* 星評価 */}
             <StarRating
               rating={item.rating}
               onChange={(r) => updateItem(item.id, { rating: r })}
             />
 
-            {/* コメント */}
             <textarea
               value={item.comment}
-              onChange={(e) => {
+              onChange={(e) =>
                 setItems((prev) =>
                   prev.map((it) =>
                     it.id === item.id ? { ...it, comment: e.target.value } : it
                   )
-                );
-              }}
+                )
+              }
               onBlur={(e) => updateItem(item.id, { comment: e.target.value })}
               className="w-full text-xs text-gray-600 mt-1 border rounded p-1"
               rows={2}
             />
 
-
-            {/* 話数 + 期 */}
             <div className="flex items-center gap-1 text-xs mt-1">
               <input
                 type="number"
@@ -345,8 +339,6 @@ export default function Home() {
               <span>話</span>
             </div>
 
-
-            {/* 削除 */}
             <button
               onClick={() => removeItem(item.id)}
               className="mt-1 text-red-500 text-xs hover:underline"
@@ -357,7 +349,6 @@ export default function Home() {
         ))}
       </div>
 
-      {/* ＋ボタン */}
       <button
         onClick={addItem}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-sky-400 text-white text-3xl shadow-lg hover:bg-sky-500"
