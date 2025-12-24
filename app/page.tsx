@@ -23,19 +23,13 @@ type Item = {
   comment: string;
   currentEpisode: number;
   totalEpisode: number;
-  season?: number | null;
+  season?: number | null; 
   genre?: "アニメ" | "ドラマ";
   imageUrl?: string;
   userId: string;
 };
 
-function StarRating({
-  rating,
-  onChange,
-}: {
-  rating: number;
-  onChange: (r: number) => void;
-}) {
+function StarRating({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     stars.push(
@@ -54,71 +48,59 @@ function StarRating({
 export default function Home() {
   const router = useRouter();
   const [filter, setFilter] = useState<"all" | Item["status"]>("all");
-  const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">(
-    "all"
-  );
+  const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">("all");
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 🔹 追加
 
-  // ログイン状態チェック
+  // 🔹 ログイン状態チェック
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUserId(user.uid);
-      setLoading(false);
+      setLoading(false); // 🔹 ユーザー情報が来たら loading を false に
     });
     return () => unsubscribe();
   }, []);
 
-  // userId が null の場合に /auth にリダイレクト
-  useEffect(() => {
-    if (!loading && !userId) {
-      router.push("/auth");
-    }
-  }, [loading, userId, router]);
+  // 🔹 loading 中は何も表示しない
+  if (loading) return <div>Loading...</div>;
+
+  // 🔹 ログインしていなければ /auth にリダイレクト
+  if (!userId) {
+    router.push("/auth");
+    return null;
+  }
 
   // Firestore からデータ取得
   useEffect(() => {
     if (!userId) return;
     const fetchData = async () => {
-      try {
-        const q = query(collection(db, "items"), where("userId", "==", userId));
-        const snapshot = await getDocs(q);
-        const data: Item[] = snapshot.docs.map((doc) => {
-          const d = doc.data();
-          return {
-            id: doc.id,
-            title: d.title || "無題",
-            status: d.status || "planToWatch",
-            rating: d.rating || 0,
-            comment: d.comment || "",
-            currentEpisode: d.currentEpisode || 0,
-            totalEpisode: d.totalEpisode || 12,
-            season: d.season ?? null,
-            genre: d.genre || "アニメ",
-            imageUrl: d.imageUrl,
-            userId: d.userId,
-          };
-        });
-        setItems(data);
-      } catch (err) {
-        console.error(err);
-      }
+      const q = query(collection(db, "items"), where("userId", "==", userId));
+      const snapshot = await getDocs(q);
+      const data: Item[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Item, "id">),
+      }));
+      setItems(data);
     };
     fetchData();
   }, [userId]);
 
-  const filteredItems = items
+  const filteredItems =
+  items
     .filter((item) => filter === "all" || item.status === filter)
     .filter((item) => genreFilter === "all" || item.genre === genreFilter)
     .slice()
     .sort((a, b) => a.title.localeCompare(b.title));
 
+
   const addItem = async () => {
     if (!userId) return;
 
+    // まずローカルで新しいアイテムを作る（idは仮）
+    const tempId = `temp-${Date.now()}`;
     const newItem: Item = {
-      id: "",
+      id: tempId,
       title: "新しい作品",
       status: "planToWatch",
       rating: 0,
@@ -131,57 +113,55 @@ export default function Home() {
       imageUrl: undefined,
     };
 
+    // 画面上に即座に追加
+    setItems((prev) => [...prev, newItem]);
+
     try {
-      const docRef = await addDoc(collection(db, "items"), newItem);
-      setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
-    } catch (err) {
-      console.error(err);
+      // Firestore に保存
+      const docRef = await addDoc(collection(db, "items"), {
+        ...newItem,
+        id: undefined, // Firestore に id を含めない
+      });
+
+      // Firestore の id を反映
+      setItems((prev) =>
+        prev.map((item) => (item.id === tempId ? { ...item, id: docRef.id } : item))
+      );
+    } catch (error) {
+      console.error("Failed to add item:", error);
+      // 追加に失敗した場合はローカルリストから削除
+      setItems((prev) => prev.filter((item) => item.id !== tempId));
     }
   };
 
+
   const updateItem = async (id: string, updated: Partial<Item>) => {
     const itemRef = doc(db, "items", id);
-    try {
-      await updateDoc(itemRef, updated);
-      setItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    await updateDoc(itemRef, updated);
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
+    );
   };
 
   const removeItem = async (id: string) => {
     const itemRef = doc(db, "items", id);
-    try {
-      await deleteDoc(itemRef);
-      setItems((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    await deleteDoc(itemRef);
+    setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleImageUpload = (id: string, file: File) => {
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        await updateItem(id, { imageUrl: base64 });
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error(err);
-    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      await updateItem(id, { imageUrl: base64 });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/auth");
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <main className="min-h-screen bg-sky-50 p-4">
@@ -197,31 +177,27 @@ export default function Home() {
 
       {/* 状態タブ */}
       <div className="flex gap-2 mb-4">
-        {["all", "planToWatch", "watching", "completed", "dropped"].map(
-          (f) => {
-            const labels: Record<string, string> = {
-              all: "すべて",
-              planToWatch: "見る予定",
-              watching: "見てる",
-              completed: "見終わった",
-              dropped: "やめた",
-            };
-            const isActive = filter === f;
-            return (
-              <button
-                key={f}
-                onClick={() => setFilter(f as any)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition ${
-                  isActive
-                    ? "bg-sky-400 text-white"
-                    : "bg-white text-gray-800 shadow"
-                }`}
-              >
-                {labels[f]}
-              </button>
-            );
-          }
-        )}
+        {["all", "planToWatch", "watching", "completed", "dropped"].map((f) => {
+          const labels: Record<string, string> = {
+            all: "すべて",
+            planToWatch: "見る予定",
+            watching: "見てる",
+            completed: "見終わった",
+            dropped: "やめた",
+          };
+          const isActive = filter === f;
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f as any)}
+              className={`px-3 py-1 rounded-full text-sm font-medium transition ${
+                isActive ? "bg-sky-400 text-white" : "bg-white text-gray-800 shadow"
+              }`}
+            >
+              {labels[f]}
+            </button>
+          );
+        })}
       </div>
 
       {/* ジャンルサブタブ */}
@@ -248,6 +224,7 @@ export default function Home() {
           );
         })}
       </div>
+
 
       {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -276,8 +253,7 @@ export default function Home() {
               type="file"
               accept="image/*"
               onChange={(e) => {
-                if (e.target.files?.[0])
-                  handleImageUpload(item.id, e.target.files[0]);
+                if (e.target.files?.[0]) handleImageUpload(item.id, e.target.files[0]);
               }}
               className="text-xs mb-1"
             />
@@ -288,9 +264,7 @@ export default function Home() {
               value={item.title}
               onChange={(e) => {
                 setItems((prev) =>
-                  prev.map((it) =>
-                    it.id === item.id ? { ...it, title: e.target.value } : it
-                  )
+                  prev.map((it) => (it.id === item.id ? { ...it, title: e.target.value } : it))
                 );
               }}
               onBlur={(e) => updateItem(item.id, { title: e.target.value })}
@@ -345,6 +319,7 @@ export default function Home() {
               rows={2}
             />
 
+
             {/* 話数 + 期 */}
             <div className="flex items-center gap-1 text-xs mt-1">
               <input
@@ -380,6 +355,7 @@ export default function Home() {
               <span>話</span>
             </div>
 
+
             {/* 削除 */}
             <button
               onClick={() => removeItem(item.id)}
@@ -402,3 +378,5 @@ export default function Home() {
     </main>
   );
 }
+
+
