@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { auth, db } from "../../firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -13,9 +13,14 @@ export default function SignUpPage() {
 
   const handleSignUp = async () => {
     try {
+      // 🔹 ブラウザ永続化
+      await setPersistence(auth, browserLocalPersistence);
+
+      // 🔹 サインアップ
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
 
+      // 🔹 Firestore にユーザー情報を保存
       await setDoc(doc(db, "users", uid), { uid, username, email });
 
       router.push("/"); // マイリストへ

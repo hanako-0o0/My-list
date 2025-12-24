@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { auth } from "../../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -11,7 +11,12 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
+      // 🔹 ブラウザ永続化を設定
+      await setPersistence(auth, browserLocalPersistence);
+
+      // 🔹 サインイン
       await signInWithEmailAndPassword(auth, email, password);
+
       router.push("/"); // マイリストへ
     } catch (error: any) {
       alert(error.message);
