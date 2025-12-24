@@ -95,33 +95,25 @@ export default function Home() {
 
 
   const addItem = async () => {
-    if (!userId) {
-      alert("ユーザー情報が取得できていません。少し待ってからもう一度お試しください。");
-      return;
-    }
+  if (!userId) return;
 
-    const newItem: Omit<Item, "id"> = {
-      title: "新しい作品",
-      status: "planToWatch",
-      rating: 0,
-      comment: "",
-      currentEpisode: 0,
-      totalEpisode: 12,
-      season: null,
-      genre: "アニメ",
-      userId,
-      imageUrl: undefined,
-    };
-
-    try {
-      const docRef = await addDoc(collection(db, "items"), newItem);
-      // docRef.id を id として追加
-      setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
-    } catch (error) {
-      console.error("追加に失敗しました:", error);
-      alert("アイテムの追加に失敗しました。");
-    }
+  const newItem: Item = {
+    id: "", // 後で Firebase で取得
+    title: "新しい作品",
+    status: "planToWatch", // 文字列ではなくリテラル型
+    rating: 0,
+    comment: "",
+    currentEpisode: 0,
+    totalEpisode: 12,
+    season: null,
+    genre: "アニメ",
+    userId,
+    imageUrl: undefined,
   };
+
+  const docRef = await addDoc(collection(db, "items"), newItem);
+  setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
+};
 
 
   const updateItem = async (id: string, updated: Partial<Item>) => {
