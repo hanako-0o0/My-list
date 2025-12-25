@@ -53,7 +53,7 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 ログイン状態チェック
+  // ログイン状態チェック
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUserId(user.uid);
@@ -62,7 +62,7 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  // 🔹 ログインしていなければ /auth にリダイレクト
+  // ログインしていなければ /auth にリダイレクト
   useEffect(() => {
     if (!loading && !userId) {
       router.push("/auth");
@@ -76,17 +76,20 @@ export default function Home() {
       try {
         const q = query(collection(db, "items"), where("userId", "==", userId));
         const snapshot = await getDocs(q);
-        const data: Item[] = snapshot.docs.map((doc) => {
-          const docData = doc.data() as Omit<Item, "id">;
-          return { id: doc.id, ...docData };
-        });
+        const data: Item[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Item, "id">),
+        }));
         setItems(data);
-      } catch (err) {
-        console.error("Failed to fetch items:", err);
+      } catch (e) {
+        console.error("Failed to fetch items:", e);
       }
     };
     fetchData();
   }, [userId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (!userId) return null;
 
   const filteredItems =
     items
@@ -99,8 +102,8 @@ export default function Home() {
     if (!userId) return;
 
     try {
-      const newItem: Item = {
-        id: "", 
+      // 🔹 imageUrl は必ず空文字にする
+      const newItem: Omit<Item, "id"> = {
         title: "新しい作品",
         status: "planToWatch",
         rating: 0,
@@ -110,27 +113,36 @@ export default function Home() {
         season: null,
         genre: "アニメ",
         userId,
-        imageUrl: undefined,
+        imageUrl: "", // undefined は絶対に入れない
       };
+
       const docRef = await addDoc(collection(db, "items"), newItem);
       setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
-    } catch (err) {
-      console.error("Failed to add item:", err);
+    } catch (e) {
+      console.error("Failed to add item:", e);
     }
   };
 
   const updateItem = async (id: string, updated: Partial<Item>) => {
-    const itemRef = doc(db, "items", id);
-    await updateDoc(itemRef, updated);
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
-    );
+    try {
+      const itemRef = doc(db, "items", id);
+      await updateDoc(itemRef, updated);
+      setItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
+      );
+    } catch (e) {
+      console.error("Failed to update item:", e);
+    }
   };
 
   const removeItem = async (id: string) => {
-    const itemRef = doc(db, "items", id);
-    await deleteDoc(itemRef);
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    try {
+      const itemRef = doc(db, "items", id);
+      await deleteDoc(itemRef);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    } catch (e) {
+      console.error("Failed to delete item:", e);
+    }
   };
 
   const handleImageUpload = (id: string, file: File) => {
@@ -146,8 +158,6 @@ export default function Home() {
     await signOut(auth);
     router.push("/auth");
   };
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <main className="min-h-screen bg-sky-50 p-4">
