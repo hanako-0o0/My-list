@@ -52,6 +52,7 @@ export default function Home() {
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
 
   // ログイン状態チェック
   useEffect(() => {
@@ -154,6 +155,24 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      await updateItem(id, { imageUrl: base64 });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/auth");
@@ -229,19 +248,31 @@ export default function Home() {
             className="bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
           >
             {/* 画像表示 16:9 */}
-            {item.imageUrl ? (
-              <div className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-gray-100">
+            <div
+              className={`w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400
+                ${draggingItemId === item.id ? "bg-sky-200 border-sky-500" : ""}`}
+              onDrop={(e) => {
+                e.preventDefault();  // ← これで新しいタブが開かないようにする
+                handleDrop(e, item.id);
+                setDraggingItemId(null);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();  // ← 必須
+                setDraggingItemId(item.id);
+              }}
+              onDragLeave={() => setDraggingItemId(null)}
+            >
+              {item.imageUrl ? (
                 <img
                   src={item.imageUrl}
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
-              </div>
-            ) : (
-              <div className="w-full aspect-[16/9] bg-sky-100 rounded-lg mb-2 flex items-center justify-center text-xs text-gray-400">
-                No Image
-              </div>
-            )}
+              ) : (
+                "ここに画像をドロップ"
+              )}
+            </div>
+
 
             {/* 画像アップロード */}
             <input
