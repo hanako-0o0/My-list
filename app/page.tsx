@@ -13,7 +13,8 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
 
 type Item = {
   id: string;
@@ -53,7 +54,10 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("q") ?? "";
+  const [search, setSearch] = useState(initialSearch);
+
 
   // ログイン状態チェック
   useEffect(() => {
@@ -89,6 +93,19 @@ export default function Home() {
     };
     fetchData();
   }, [userId]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (search) {
+      params.set("q", search);
+    } else {
+      params.delete("q");
+    }
+
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [search, router]);
+
 
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
