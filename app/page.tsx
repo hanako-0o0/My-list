@@ -53,6 +53,7 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   // ログイン状態チェック
   useEffect(() => {
@@ -96,6 +97,9 @@ export default function Home() {
     items
       .filter((item) => filter === "all" || item.status === filter)
       .filter((item) => genreFilter === "all" || item.genre === genreFilter)
+      .filter((item) =>
+        item.title.toLowerCase().includes(search.toLowerCase())
+      )
       .slice()
       .sort((a, b) => a.title.localeCompare(b.title));
 
@@ -239,6 +243,15 @@ export default function Home() {
           );
         })}
       </div>
+
+      {/* 検索バー */}
+      <input
+        type="text"
+        placeholder="タイトルで検索"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full mb-4 px-3 py-2 border rounded shadow-sm text-sm"
+      />
 
       {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
