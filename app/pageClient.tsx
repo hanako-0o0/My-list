@@ -28,6 +28,7 @@ type Item = {
   genre?: "アニメ" | "ドラマ";
   imageUrl?: string;
   userId: string;
+  favorite?: boolean;
 };
 
 function StarRating({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
@@ -57,6 +58,8 @@ export default function Home() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(initialSearch);
+  const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
+
 
 
   // ログイン状態チェック
@@ -114,6 +117,7 @@ export default function Home() {
     items
       .filter((item) => filter === "all" || item.status === filter)
       .filter((item) => genreFilter === "all" || item.genre === genreFilter)
+      .filter((item) => !showFavoriteOnly || item.favorite)
       .filter((item) =>
         item.title.toLowerCase().includes(search.toLowerCase())
       )
@@ -136,6 +140,7 @@ export default function Home() {
         genre: "アニメ",
         userId,
         imageUrl: "", // undefined は絶対に入れない
+        favorite: false,   
       };
 
       const docRef = await addDoc(collection(db, "items"), newItem);
@@ -287,6 +292,15 @@ export default function Home() {
         )}
       </div>
 
+      {/* お気に入りボタン */}
+      <button
+        onClick={() => setShowFavoriteOnly((prev) => !prev)}
+        className={`px-3 py-1 rounded-full text-sm ${
+          showFavoriteOnly ? "bg-pink-400 text-white" : "bg-white shadow"
+        }`}
+      >
+        ❤️ お気に入り
+      </button>
 
       {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -295,6 +309,14 @@ export default function Home() {
             key={item.id}
             className="bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
           >
+            {/* ❤️ お気に入りボタン */}
+            <button
+              onClick={() => updateItem(item.id, { favorite: !item.favorite })}
+              className="absolute top-2 right-2 text-xl z-10"
+            >
+              {item.favorite ? "❤️" : "🤍"}
+            </button>
+            
             {/* 画像表示 16:9 */}
             <div
               className={`w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400
