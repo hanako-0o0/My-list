@@ -245,13 +245,31 @@ export default function Home() {
       </div>
 
       {/* 検索バー */}
-      <input
-        type="text"
-        placeholder="タイトルで検索"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full mb-4 px-3 py-2 border rounded shadow-sm text-sm"
-      />
+      <div className="relative mb-4">
+        <input
+          type="text"
+          placeholder="タイトルで検索"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur(); // Enterで確定（キーボード閉じる）
+            }
+          }}
+          className="w-full px-3 py-2 pr-10 border rounded shadow-sm text-sm"
+        />
+
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            aria-label="clear"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
 
       {/* リスト一覧 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
