@@ -307,8 +307,9 @@ export default function Home() {
         {filteredItems.map((item) => (
           <div
             key={item.id}
-            className="bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
+            className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
           >
+
             {/* ❤️ お気に入りボタン */}
             <button
               onClick={() => updateItem(item.id, { favorite: !item.favorite })}
