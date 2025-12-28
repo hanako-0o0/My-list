@@ -60,6 +60,7 @@ export default function Home() {
   const initialSearch = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(initialSearch);
   const isComposing = useRef(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
 
 
@@ -99,6 +100,7 @@ export default function Home() {
     fetchData();
   }, [userId]);
 
+  // URL検索クエリ反映
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
@@ -111,6 +113,10 @@ export default function Home() {
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [search, router]);
 
+  // 新しいアイテムが追加されたら一番下までスクロール
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [items.length]);
 
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
@@ -489,6 +495,7 @@ export default function Home() {
             </button>
           </div>
         ))}
+        <div ref={bottomRef} />
       </div>
 
       {/* ＋ボタン */}
