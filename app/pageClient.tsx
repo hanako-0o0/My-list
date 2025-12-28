@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -14,7 +14,6 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
 
 
 type Item = {
@@ -61,7 +60,7 @@ export default function Home() {
   const initialSearch = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(initialSearch);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
+
 
 
   // ログイン状態チェック
@@ -100,8 +99,13 @@ export default function Home() {
   }, [userId]);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (search) params.set("q", search);
+    const params = new URLSearchParams(window.location.search);
+
+    if (search) {
+      params.set("q", search);
+    } else {
+      params.delete("q");
+    }
 
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [search, router]);
@@ -110,8 +114,8 @@ export default function Home() {
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
 
-  const filteredItems = useMemo(() => {
-    return items
+  const filteredItems =
+    items
       .filter((item) => filter === "all" || item.status === filter)
       .filter((item) => genreFilter === "all" || item.genre === genreFilter)
       .filter((item) => !showFavoriteOnly || item.favorite)
@@ -124,22 +128,6 @@ export default function Home() {
         if (!a.isNew && b.isNew) return -1;
         return a.title.localeCompare(b.title); // それ以外はタイトル順
       });
-  }, [items, filter, genreFilter, showFavoriteOnly, search]);
-
-
-  // 新規追加時にスクロール
-  useEffect(() => {
-    if (!listRef.current) return;
-    if (!filteredItems || filteredItems.length === 0) return;
-
-    const newItemIndex = filteredItems.findIndex(item => item.isNew);
-    if (newItemIndex === -1 || newItemIndex >= listRef.current.children.length) return;
-
-    const lastItem = listRef.current.children[newItemIndex] as HTMLElement | undefined;
-    if (lastItem) {
-      lastItem.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [filteredItems]);
 
 
   const addItem = async () => {
@@ -327,7 +315,7 @@ export default function Home() {
       </button>
 
       {/* リスト一覧 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4" ref={listRef}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
           <div
             key={item.id}
@@ -497,3 +485,5 @@ export default function Home() {
     </main>
   );
 }
+
+
