@@ -29,6 +29,7 @@ type Item = {
   imageUrl?: string;
   userId: string;
   favorite?: boolean;
+  isNew?: boolean;
 };
 
 function StarRating({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
@@ -122,7 +123,12 @@ export default function Home() {
         item.title.toLowerCase().includes(search.toLowerCase())
       )
       .slice()
-      .sort((a, b) => a.title.localeCompare(b.title));
+      .sort((a, b) => {
+        if (a.isNew && !b.isNew) return 1;    // 新規は最後
+        if (!a.isNew && b.isNew) return -1;
+        return a.title.localeCompare(b.title); // それ以外はタイトル順
+      });
+
 
   const addItem = async () => {
     if (!userId) return;
@@ -144,6 +150,7 @@ export default function Home() {
         userId,
         imageUrl: "",
         favorite: false,
+        isNew: true,
       };
 
       const docRef = await addDoc(collection(db, "items"), newItem);
@@ -369,7 +376,7 @@ export default function Home() {
                   prev.map((it) => (it.id === item.id ? { ...it, title: e.target.value } : it))
                 );
               }}
-              onBlur={(e) => updateItem(item.id, { title: e.target.value })}
+              onBlur={(e) => updateItem(item.id, { title: e.target.value, isNew: false })}
               onKeyDown={(e) => {
                 if (e.key === "Enter") e.currentTarget.blur();
               }}
