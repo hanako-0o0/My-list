@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -59,6 +59,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(initialSearch);
+  const isComposing = useRef(false);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
 
 
@@ -371,10 +372,25 @@ export default function Home() {
             <input
               type="text"
               value={item.title}
-              onChange={(e) => {
+              onCompositionStart={() => {
+                isComposing.current = true;
+              }}
+              onCompositionEnd={(e) => {
+                isComposing.current = false;
                 setItems((prev) =>
-                  prev.map((it) => (it.id === item.id ? { ...it, title: e.target.value } : it))
+                  prev.map((it) =>
+                    it.id === item.id ? { ...it, title: e.currentTarget.value } : it
+                  )
                 );
+              }}
+              onChange={(e) => {
+                if (!isComposing.current) {
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === item.id ? { ...it, title: e.target.value } : it
+                    )
+                  );
+                }
               }}
               onBlur={(e) => updateItem(item.id, { title: e.target.value, isNew: false })}
               onKeyDown={(e) => {
@@ -382,6 +398,7 @@ export default function Home() {
               }}
               className="w-full text-sm font-semibold text-gray-800 mb-1 border-b border-gray-300"
             />
+
 
             {/* 状態 */}
             <select
