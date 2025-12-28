@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
 
 type Item = {
@@ -99,7 +100,6 @@ export default function Home() {
   }, [userId]);
 
   useEffect(() => {
-    // サーバーでは window を使わない
     const params = new URLSearchParams();
     if (search) params.set("q", search);
 
@@ -107,12 +107,11 @@ export default function Home() {
   }, [search, router]);
 
 
-
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
 
-  const filteredItems =
-    items
+  const filteredItems = useMemo(() => {
+    return items
       .filter((item) => filter === "all" || item.status === filter)
       .filter((item) => genreFilter === "all" || item.genre === genreFilter)
       .filter((item) => !showFavoriteOnly || item.favorite)
@@ -125,6 +124,8 @@ export default function Home() {
         if (!a.isNew && b.isNew) return -1;
         return a.title.localeCompare(b.title); // それ以外はタイトル順
       });
+  }, [items, filter, genreFilter, showFavoriteOnly, search]);
+
 
   // 新規追加時にスクロール
   useEffect(() => {
@@ -135,7 +136,9 @@ export default function Home() {
     if (newItemIndex === -1 || newItemIndex >= listRef.current.children.length) return;
 
     const lastItem = listRef.current.children[newItemIndex] as HTMLElement | undefined;
-    lastItem?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (lastItem) {
+      lastItem.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   }, [filteredItems]);
 
 
