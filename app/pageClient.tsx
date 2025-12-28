@@ -56,9 +56,7 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const initialSearch = searchParams.get("q") ?? "";
-  const [search, setSearch] = useState(initialSearch);
+  const [search, setSearch] = useState("");
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -101,12 +99,8 @@ export default function Home() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-
-    if (search) {
-      params.set("q", search);
-    } else {
-      params.delete("q");
-    }
+    if (search) params.set("q", search);
+    else params.delete("q");
 
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [search, router]);
