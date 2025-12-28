@@ -99,16 +99,13 @@ export default function Home() {
   }, [userId]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    if (search) {
-      params.set("q", search);
-    } else {
-      params.delete("q");
-    }
+    // サーバーでは window を使わない
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
 
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [search, router]);
+
 
 
   if (loading) return <div>Loading...</div>;
@@ -132,16 +129,16 @@ export default function Home() {
   // 新規追加時にスクロール
   useEffect(() => {
     if (!listRef.current) return;
-    
-    // 新規追加アイテムを取得
-    const newItemIndex = filteredItems.findIndex(item => item.isNew);
-    if (newItemIndex === -1) return;
+    if (!filteredItems || filteredItems.length === 0) return;
 
-    // 最後の子要素までスクロール
-    const lastItem = listRef.current.children[newItemIndex] as HTMLElement;
+    const newItemIndex = filteredItems.findIndex(item => item.isNew);
+    if (newItemIndex === -1 || newItemIndex >= listRef.current.children.length) return;
+
+    const lastItem = listRef.current.children[newItemIndex] as HTMLElement | undefined;
     lastItem?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [filteredItems]);
-  
+
+
   const addItem = async () => {
     if (!userId) return;
 
