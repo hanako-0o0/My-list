@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -56,9 +56,10 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("q") ?? "";
+  const [search, setSearch] = useState(initialSearch);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
 
 
 
@@ -98,16 +99,14 @@ export default function Home() {
   }, [userId]);
 
   useEffect(() => {
-    // クライアント初回レンダー後に search を URL から取得
-    const initialSearch = new URLSearchParams(window.location.search).get("q") ?? "";
-    setSearch(initialSearch);
-  }, []);
-
-  useEffect(() => {
-    // search が変わったら URL を更新
     const params = new URLSearchParams(window.location.search);
-    if (search) params.set("q", search);
-    else params.delete("q");
+
+    if (search) {
+      params.set("q", search);
+    } else {
+      params.delete("q");
+    }
+
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [search, router]);
 
@@ -129,21 +128,6 @@ export default function Home() {
         if (!a.isNew && b.isNew) return -1;
         return a.title.localeCompare(b.title); // それ以外はタイトル順
       });
-
-  // 新規追加アイテムがあればスクロール
-  useEffect(() => {
-    if (!listRef.current) return;
-    if (!filteredItems || filteredItems.length === 0) return;
-
-    // 新規アイテムを探す
-    const newItemIndex = filteredItems.findIndex(item => item.isNew);
-    if (newItemIndex === -1) return; // 新規なし
-
-    const newItemElement = listRef.current.children[newItemIndex] as HTMLElement | undefined;
-    if (newItemElement) {
-      newItemElement.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, [filteredItems]);
 
 
   const addItem = async () => {
@@ -331,9 +315,12 @@ export default function Home() {
       </button>
 
       {/* リスト一覧 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4" ref={listRef}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
-          <div key={item.id} className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition">
+          <div
+            key={item.id}
+            className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
+          >
 
             {/* ❤️ お気に入りボタン */}
             <button
