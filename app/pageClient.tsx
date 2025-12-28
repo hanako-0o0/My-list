@@ -98,10 +98,16 @@ export default function Home() {
   }, [userId]);
 
   useEffect(() => {
+    // クライアント初回レンダー後に search を URL から取得
+    const initialSearch = new URLSearchParams(window.location.search).get("q") ?? "";
+    setSearch(initialSearch);
+  }, []);
+
+  useEffect(() => {
+    // search が変わったら URL を更新
     const params = new URLSearchParams(window.location.search);
     if (search) params.set("q", search);
     else params.delete("q");
-
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [search, router]);
 
