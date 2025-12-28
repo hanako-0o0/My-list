@@ -128,22 +128,27 @@ export default function Home() {
     if (!userId) return;
 
     try {
-      // 🔹 imageUrl は必ず空文字にする
+      // フィルターされている状態から初期値を取得
+      const newStatus = filter === "all" ? "planToWatch" : filter;
+      const newGenre = genreFilter === "all" ? "アニメ" : genreFilter;
+
       const newItem: Omit<Item, "id"> = {
         title: "新しい作品",
-        status: "planToWatch",
+        status: newStatus,
         rating: 0,
         comment: "",
         currentEpisode: 0,
         totalEpisode: 12,
         season: null,
-        genre: "アニメ",
+        genre: newGenre,
         userId,
-        imageUrl: "", // undefined は絶対に入れない
-        favorite: false,   
+        imageUrl: "",
+        favorite: false,
       };
 
       const docRef = await addDoc(collection(db, "items"), newItem);
+
+      // 配列の最後に追加
       setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
     } catch (e) {
       console.error("Failed to add item:", e);
