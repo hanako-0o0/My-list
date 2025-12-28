@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -60,7 +60,7 @@ export default function Home() {
   const initialSearch = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(initialSearch);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
-
+  const listRef = useRef<HTMLDivElement>(null);
 
 
   // ログイン状態チェック
@@ -129,7 +129,19 @@ export default function Home() {
         return a.title.localeCompare(b.title); // それ以外はタイトル順
       });
 
+  // 新規追加時にスクロール
+  useEffect(() => {
+    if (!listRef.current) return;
+    
+    // 新規追加アイテムを取得
+    const newItemIndex = filteredItems.findIndex(item => item.isNew);
+    if (newItemIndex === -1) return;
 
+    // 最後の子要素までスクロール
+    const lastItem = listRef.current.children[newItemIndex] as HTMLElement;
+    lastItem?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [filteredItems]);
+  
   const addItem = async () => {
     if (!userId) return;
 
@@ -315,7 +327,7 @@ export default function Home() {
       </button>
 
       {/* リスト一覧 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4" ref={listRef}>
         {filteredItems.map((item) => (
           <div
             key={item.id}
