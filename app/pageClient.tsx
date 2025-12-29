@@ -62,6 +62,7 @@ export default function Home() {
   const isComposing = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
+  const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
 
 
 
@@ -377,30 +378,27 @@ export default function Home() {
             {/* タイトル */}
             <input
               type="text"
-              value={item.title}
-              onCompositionStart={() => {
-                isComposing.current = true;
-              }}
-              onCompositionEnd={(e) => {
-                isComposing.current = false;
-                setItems((prev) =>
-                  prev.map((it) =>
-                    it.id === item.id ? { ...it, title: e.currentTarget.value } : it
-                  )
-                );
-              }}
+              value={localTitles[item.id] ?? item.title}
               onChange={(e) => {
-                if (!isComposing.current) {
-                  setItems((prev) =>
-                    prev.map((it) =>
-                      it.id === item.id ? { ...it, title: e.target.value } : it
-                    )
-                  );
-                }
+                setLocalTitles((prev) => ({
+                  ...prev,
+                  [item.id]: e.target.value,
+                }));
               }}
-              onBlur={(e) => updateItem(item.id, { title: e.target.value, isNew: false })}
+              onBlur={(e) => {
+                const value = e.target.value;
+
+                updateItem(item.id, { title: value, isNew: false });
+
+                setLocalTitles((prev) => {
+                  const copy = { ...prev };
+                  delete copy[item.id];
+                  return copy;
+                });
+              }}
               className="w-full text-sm font-semibold text-gray-800 mb-1 border-b border-gray-300"
             />
+
 
             {/* 状態 */}
             <select
