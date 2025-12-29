@@ -378,12 +378,25 @@ export default function Home() {
             <input
               type="text"
               value={item.title}
-              onChange={(e) => {
+              onCompositionStart={() => {
+                isComposing.current = true;
+              }}
+              onCompositionEnd={(e) => {
+                isComposing.current = false;
                 setItems((prev) =>
                   prev.map((it) =>
-                    it.id === item.id ? { ...it, title: e.target.value } : it
+                    it.id === item.id ? { ...it, title: e.currentTarget.value } : it
                   )
                 );
+              }}
+              onChange={(e) => {
+                if (!isComposing.current) {
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === item.id ? { ...it, title: e.target.value } : it
+                    )
+                  );
+                }
               }}
               onBlur={(e) => updateItem(item.id, { title: e.target.value, isNew: false })}
               className="w-full text-sm font-semibold text-gray-800 mb-1 border-b border-gray-300"
