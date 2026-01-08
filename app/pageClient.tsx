@@ -25,7 +25,7 @@ type Item = {
   currentEpisode: number;
   totalEpisode: number;
   season?: number | null; 
-  genre?: "アニメ" | "ドラマ";
+  genre?: "アニメ" | "ドラマ" | "映画";
   imageUrl?: string;
   userId: string;
   favorite?: boolean;
@@ -51,7 +51,7 @@ function StarRating({ rating, onChange }: { rating: number; onChange: (r: number
 export default function Home() {
   const router = useRouter();
   const [filter, setFilter] = useState<"all" | Item["status"]>("all");
-  const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ">("all");
+  const [genreFilter, setGenreFilter] = useState<"all" | "アニメ" | "ドラマ" | "映画">("all");
   const [items, setItems] = useState<Item[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -263,11 +263,12 @@ export default function Home() {
 
       {/* ジャンルサブタブ */}
       <div className="flex gap-2 mb-4 ml-1">
-        {["all", "アニメ", "ドラマ"].map((g) => {
+        {["all", "アニメ", "ドラマ", "映画"].map((g) => {
           const labels: Record<string, string> = {
             all: "すべて",
             アニメ: "アニメ",
             ドラマ: "ドラマ",
+            映画: "映画",
           };
           const isActive = genreFilter === g;
           return (
@@ -422,6 +423,7 @@ export default function Home() {
             >
               <option value="アニメ">アニメ</option>
               <option value="ドラマ">ドラマ</option>
+              <option value="映画">映画</option>
             </select>
 
             {/* 星評価 */}
