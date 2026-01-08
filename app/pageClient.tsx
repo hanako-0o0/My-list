@@ -228,6 +228,27 @@ export default function Home() {
     <main className="min-h-screen bg-sky-50 p-4">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">My List</h1>
 
+      {/* 外部サイトショートカット */}
+      <div className="flex gap-2 mb-4">
+        <a
+          href="https://hianime.to/home"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-3 py-1 rounded-full text-sm bg-indigo-500 text-white hover:bg-indigo-600 transition"
+        >
+          HiAnime
+        </a>
+
+        <a
+          href="https://www.iyf.tv/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-3 py-1 rounded-full text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition"
+        >
+          IYF
+        </a>
+      </div>
+
       {/* ログアウトボタン */}
       <button
         onClick={handleLogout}
@@ -235,6 +256,7 @@ export default function Home() {
       >
         ログアウト
       </button>
+
 
       {/* 状態タブ */}
       <div className="flex gap-2 mb-4">
