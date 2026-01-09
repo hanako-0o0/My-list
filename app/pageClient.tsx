@@ -500,7 +500,7 @@ export default function Home() {
               <input
                 type="number"
                 placeholder="話"
-                value={item.currentEpisode}
+                value={item.currentEpisode === 0 ? "" : item.currentEpisode}
                 onChange={(e) => {
                   const value = e.target.value === "" ? 0 : Number(e.target.value);
                   setItems((prev) =>
@@ -523,7 +523,7 @@ export default function Home() {
               <input
                 type="number"
                 placeholder="全話"
-                value={item.totalEpisode}
+                value={item.totalEpisode === 0 ? "" : item.totalEpisode}
                 onChange={(e) => {
                   const value = e.target.value === "" ? 0 : Number(e.target.value);
                   setItems((prev) =>
