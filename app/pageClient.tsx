@@ -473,15 +473,23 @@ export default function Home() {
             <div className="flex items-center gap-1 text-xs mt-1">
               <input
                 type="number"
-                placeholder="期"
-                value={item.season ?? ""}
-                onChange={(e) =>
-                  updateItem(item.id, {
-                    season: e.target.value === "" ? null : Number(e.target.value),
-                  })
-                }
-                className="w-10 border rounded px-1"
+                value={item.currentEpisode === 0 ? "" : item.currentEpisode}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === item.id ? { ...it, currentEpisode: value } : it
+                    )
+                  );
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  updateItem(item.id, { currentEpisode: value });
+                }}
+                className="w-12 border rounded px-1"
               />
+
               <span>期</span>
 
               <input
