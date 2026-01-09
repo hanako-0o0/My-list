@@ -185,8 +185,8 @@ export default function Home() {
   const removeItem = async (id: string) => {
     try {
       const itemRef = doc(db, "items", id);
-      setItems((prev) => prev.filter((item) => item.id !== id));
       await deleteDoc(itemRef);
+      setItems((prev) => prev.filter((item) => item.id !== id));
     } catch (e) {
       console.error("Failed to delete item:", e);
     }
