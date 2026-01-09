@@ -471,6 +471,7 @@ export default function Home() {
 
             {/* 話数 + 期 */}
             <div className="flex items-center gap-1 text-xs mt-1">
+              {/* 期 */}
               <input
                 type="number"
                 placeholder="期"
@@ -484,12 +485,13 @@ export default function Home() {
               />
               <span>期</span>
 
+              {/* 現在話数 */}
               <input
                 type="number"
+                placeholder="話"
                 value={item.currentEpisode === 0 ? "" : item.currentEpisode}
                 onChange={(e) => {
                   const value = e.target.value === "" ? 0 : Number(e.target.value);
-
                   setItems((prev) =>
                     prev.map((it) =>
                       it.id === item.id ? { ...it, currentEpisode: value } : it
@@ -502,7 +504,29 @@ export default function Home() {
                 }}
                 className="w-12 border rounded px-1"
               />
+              <span>話</span>
 
+              <span>/</span>
+
+              {/* 全話数 */}
+              <input
+                type="number"
+                placeholder="全話"
+                value={item.totalEpisode === 0 ? "" : item.totalEpisode}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === item.id ? { ...it, totalEpisode: value } : it
+                    )
+                  );
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  updateItem(item.id, { totalEpisode: value });
+                }}
+                className="w-14 border rounded px-1"
+              />
               <span>話</span>
             </div>
 
