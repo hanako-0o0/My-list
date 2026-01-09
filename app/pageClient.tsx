@@ -476,11 +476,22 @@ export default function Home() {
                 type="number"
                 placeholder="期"
                 value={item.season ?? ""}
-                onChange={(e) =>
-                  updateItem(item.id, {
-                    season: e.target.value === "" ? null : Number(e.target.value),
-                  })
-                }
+                onChange={(e) => {
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === item.id ? { ...it, season: value } : it
+                    )
+                  );
+                }}
+                onBlur={(e) => {
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+
+                  updateItem(item.id, { season: value });
+                }}
                 className="w-10 border rounded px-1"
               />
               <span>期</span>
