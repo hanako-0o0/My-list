@@ -185,8 +185,8 @@ export default function Home() {
   const removeItem = async (id: string) => {
     try {
       const itemRef = doc(db, "items", id);
-      await deleteDoc(itemRef);
       setItems((prev) => prev.filter((item) => item.id !== id));
+      await deleteDoc(itemRef);
     } catch (e) {
       console.error("Failed to delete item:", e);
     }
@@ -486,20 +486,23 @@ export default function Home() {
 
               <input
                 type="number"
-                value={item.currentEpisode}
+                value={item.currentEpisode === 0 ? "" : item.currentEpisode}
                 onChange={(e) => {
-                  const value = Number(e.target.value);
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+
                   setItems((prev) =>
                     prev.map((it) =>
                       it.id === item.id ? { ...it, currentEpisode: value } : it
                     )
                   );
                 }}
-                onBlur={(e) =>
-                  updateItem(item.id, { currentEpisode: Number(e.target.value) })
-                }
+                onBlur={(e) => {
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  updateItem(item.id, { currentEpisode: value });
+                }}
                 className="w-12 border rounded px-1"
               />
+
               <span>話</span>
             </div>
 
