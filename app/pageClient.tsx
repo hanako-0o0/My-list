@@ -152,7 +152,7 @@ export default function Home() {
         rating: 0,
         comment: "",
         currentEpisode: 0,
-        totalEpisode: 12,
+        totalEpisode: 10,
         season: null,
         genre: newGenre,
         userId,
