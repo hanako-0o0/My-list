@@ -25,6 +25,7 @@ type Item = {
   currentEpisode?: number | null;
   totalEpisode?: number | null;
   season?: number | null; 
+  movieOrder?: number | null;
   genre?: "アニメ" | "ドラマ" | "映画";
   imageUrl?: string;
   userId: string;
@@ -157,6 +158,7 @@ export default function Home() {
         currentEpisode: isCompleted ? defaultTotal : null,
         totalEpisode: defaultTotal,
         season: null,
+        movieOrder: newGenre === "映画" ? 1 : null,
         genre: newGenre,
         userId,
         imageUrl: "",
@@ -485,126 +487,148 @@ export default function Home() {
               rows={2}
             />
 
-            {/* 話数 + 期 */}
-            <div className="flex items-center gap-1 text-xs mt-1">
-              {/* 期 */}
-              <input
-                type="number"
-                placeholder="期"
-                value={item.season ?? ""}
-                onChange={(e) => {
-                  const value =
-                    e.target.value === "" ? null : Number(e.target.value);
+            {/* 話数 / 映画用UI */}
+            {item.genre === "映画" ? (
+              /* 🎬 映画 */
+              <div className="flex items-center gap-1 text-xs mt-1">
+                <input
+                  type="number"
+                  placeholder="何作目"
+                  value={item.movieOrder ?? ""}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-                  setItems((prev) =>
-                    prev.map((it) =>
-                      it.id === item.id ? { ...it, season: value } : it
-                    )
-                  );
-                }}
-                onBlur={(e) => {
-                  const value =
-                    e.target.value === "" ? null : Number(e.target.value);
+                    setItems((prev) =>
+                      prev.map((it) =>
+                        it.id === item.id ? { ...it, movieOrder: value } : it
+                      )
+                    );
+                  }}
+                  onBlur={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-                  updateItem(item.id, { season: value });
-                }}
-                className="w-10 border rounded px-1"
-              />
-              <span>期</span>
+                    updateItem(item.id, { movieOrder: value });
+                  }}
+                  className="w-16 border rounded px-1"
+                />
+                <span>作目</span>
+              </div>
+            ) : (
+              /* 📺 アニメ・ドラマ */
+              <div className="flex items-center gap-1 text-xs mt-1">
+                {/* 期 */}
+                <input
+                  type="number"
+                  placeholder="期"
+                  value={item.season ?? ""}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-              {/* 現在話数 */}
-              <input
-                type="number"
-                placeholder="話"
-                value={item.currentEpisode ?? ""}
-                onChange={(e) => {
-                  const value =
-                    e.target.value === "" ? null : Number(e.target.value);
+                    setItems((prev) =>
+                      prev.map((it) =>
+                        it.id === item.id ? { ...it, season: value } : it
+                      )
+                    );
+                  }}
+                  onBlur={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-                  setItems((prev) =>
-                    prev.map((it) => {
-                      if (it.id !== item.id) return it;
+                    updateItem(item.id, { season: value });
+                  }}
+                  className="w-10 border rounded px-1"
+                />
+                <span>期</span>
 
-                      if (it.status === "completed") {
-                        return {
-                          ...it,
-                          currentEpisode: value,
-                          totalEpisode: value,
-                        };
-                      }
+                {/* 現在話数 */}
+                <input
+                  type="number"
+                  placeholder="話"
+                  value={item.currentEpisode ?? ""}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-                      return { ...it, currentEpisode: value };
-                    })
-                  );
-                }}
+                    setItems((prev) =>
+                      prev.map((it) => {
+                        if (it.id !== item.id) return it;
 
-                onBlur={(e) => {
-                  const value =
-                    e.target.value === "" ? null : Number(e.target.value);
+                        if (it.status === "completed") {
+                          return {
+                            ...it,
+                            currentEpisode: value,
+                            totalEpisode: value,
+                          };
+                        }
 
-                  if (item.status === "completed") {
-                    updateItem(item.id, {
-                      currentEpisode: value,
-                      totalEpisode: value,
-                    });
-                  } else {
-                    updateItem(item.id, { currentEpisode: value });
-                  }
-                }}
+                        return { ...it, currentEpisode: value };
+                      })
+                    );
+                  }}
+                  onBlur={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-                className="w-12 border rounded px-1"
-              />
+                    if (item.status === "completed") {
+                      updateItem(item.id, {
+                        currentEpisode: value,
+                        totalEpisode: value,
+                      });
+                    } else {
+                      updateItem(item.id, { currentEpisode: value });
+                    }
+                  }}
+                  className="w-12 border rounded px-1"
+                />
 
-              <span>話</span>
+                <span>話 /</span>
 
-              <span>/</span>
+                {/* 全話数 */}
+                <input
+                  type="number"
+                  placeholder="全話"
+                  value={item.totalEpisode ?? ""}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-              {/* 全話数 */}
-              <input
-                type="number"
-                placeholder="全話"
-                value={item.totalEpisode ?? ""}
-                onChange={(e) => {
-                  const value =
-                    e.target.value === "" ? null : Number(e.target.value);
+                    setItems((prev) =>
+                      prev.map((it) => {
+                        if (it.id !== item.id) return it;
 
-                  setItems((prev) =>
-                    prev.map((it) => {
-                      if (it.id !== item.id) return it;
+                        if (it.status === "completed") {
+                          return {
+                            ...it,
+                            totalEpisode: value,
+                            currentEpisode: value,
+                          };
+                        }
 
-                      if (it.status === "completed") {
-                        return {
-                          ...it,
-                          totalEpisode: value,
-                          currentEpisode: value,
-                        };
-                      }
+                        return { ...it, totalEpisode: value };
+                      })
+                    );
+                  }}
+                  onBlur={(e) => {
+                    const value =
+                      e.target.value === "" ? null : Number(e.target.value);
 
-                      return { ...it, totalEpisode: value };
-                    })
-                  );
-                }}
-
-                onBlur={(e) => {
-                  const value =
-                    e.target.value === "" ? null : Number(e.target.value);
-
-                  if (item.status === "completed") {
-                    updateItem(item.id, {
-                      totalEpisode: value,
-                      currentEpisode: value,
-                    });
-                  } else {
-                    updateItem(item.id, { totalEpisode: value });
-                  }
-                }}
-
-                className="w-14 border rounded px-1"
-              />
-
-              <span>話</span>
-            </div>
-
+                    if (item.status === "completed") {
+                      updateItem(item.id, {
+                        totalEpisode: value,
+                        currentEpisode: value,
+                      });
+                    } else {
+                      updateItem(item.id, { totalEpisode: value });
+                    }
+                  }}
+                  className="w-14 border rounded px-1"
+                />
+                <span>話</span>
+              </div>
+            )}
             {/* 削除 */}
             <button
               onClick={() => removeItem(item.id)}
