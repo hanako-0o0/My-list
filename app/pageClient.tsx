@@ -22,8 +22,8 @@ type Item = {
   status: "planToWatch" | "watching" | "completed" | "dropped";
   rating: number;
   comment: string;
-  currentEpisode: number;
-  totalEpisode: number;
+  currentEpisode?: number | null;
+  totalEpisode?: number | null;
   season?: number | null; 
   genre?: "アニメ" | "ドラマ" | "映画";
   imageUrl?: string;
@@ -151,7 +151,7 @@ export default function Home() {
         status: newStatus,
         rating: 0,
         comment: "",
-        currentEpisode: 0,
+        currentEpisode: null,
         totalEpisode: 10,
         season: null,
         genre: newGenre,
@@ -502,7 +502,9 @@ export default function Home() {
                 placeholder="話"
                 value={item.currentEpisode ?? ""}
                 onChange={(e) => {
-                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+
                   setItems((prev) =>
                     prev.map((it) =>
                       it.id === item.id ? { ...it, currentEpisode: value } : it
@@ -510,11 +512,14 @@ export default function Home() {
                   );
                 }}
                 onBlur={(e) => {
-                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+
                   updateItem(item.id, { currentEpisode: value });
                 }}
                 className="w-12 border rounded px-1"
               />
+
               <span>話</span>
 
               <span>/</span>
@@ -525,7 +530,9 @@ export default function Home() {
                 placeholder="全話"
                 value={item.totalEpisode ?? ""}
                 onChange={(e) => {
-                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+
                   setItems((prev) =>
                     prev.map((it) =>
                       it.id === item.id ? { ...it, totalEpisode: value } : it
@@ -533,11 +540,14 @@ export default function Home() {
                   );
                 }}
                 onBlur={(e) => {
-                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+
                   updateItem(item.id, { totalEpisode: value });
                 }}
                 className="w-14 border rounded px-1"
               />
+
               <span>話</span>
             </div>
 
