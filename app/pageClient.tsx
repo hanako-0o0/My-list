@@ -146,13 +146,16 @@ export default function Home() {
       const newStatus = filter === "all" ? "planToWatch" : filter;
       const newGenre = genreFilter === "all" ? "アニメ" : genreFilter;
 
+      const defaultTotal = null;
+      const isCompleted = newStatus === "completed";
+
       const newItem: Omit<Item, "id"> = {
         title: "新しい作品",
         status: newStatus,
         rating: 0,
         comment: "",
-        currentEpisode: null,
-        totalEpisode: 10,
+        currentEpisode: isCompleted ? defaultTotal : null,
+        totalEpisode: defaultTotal,
         season: null,
         genre: newGenre,
         userId,
@@ -426,9 +429,22 @@ export default function Home() {
             {/* 状態 */}
             <select
               value={item.status}
-              onChange={(e) =>
-                updateItem(item.id, { status: e.target.value as Item["status"] })
-              }
+              onChange={(e) => {
+                const newStatus = e.target.value as Item["status"];
+
+                if (newStatus === "completed") {
+                  const syncedValue = item.totalEpisode ?? item.currentEpisode ?? 0;
+
+                  updateItem(item.id, {
+                    status: newStatus,
+                    currentEpisode: syncedValue,
+                    totalEpisode: syncedValue,
+                  });
+                } else {
+                  updateItem(item.id, { status: newStatus });
+                }
+              }}
+
               className="text-xs mb-1 border rounded px-1 py-0.5"
             >
               <option value="planToWatch">見る予定</option>
@@ -506,17 +522,36 @@ export default function Home() {
                     e.target.value === "" ? null : Number(e.target.value);
 
                   setItems((prev) =>
-                    prev.map((it) =>
-                      it.id === item.id ? { ...it, currentEpisode: value } : it
-                    )
+                    prev.map((it) => {
+                      if (it.id !== item.id) return it;
+
+                      if (it.status === "completed") {
+                        return {
+                          ...it,
+                          currentEpisode: value,
+                          totalEpisode: value,
+                        };
+                      }
+
+                      return { ...it, currentEpisode: value };
+                    })
                   );
                 }}
+
                 onBlur={(e) => {
                   const value =
                     e.target.value === "" ? null : Number(e.target.value);
 
-                  updateItem(item.id, { currentEpisode: value });
+                  if (item.status === "completed") {
+                    updateItem(item.id, {
+                      currentEpisode: value,
+                      totalEpisode: value,
+                    });
+                  } else {
+                    updateItem(item.id, { currentEpisode: value });
+                  }
                 }}
+
                 className="w-12 border rounded px-1"
               />
 
@@ -534,17 +569,36 @@ export default function Home() {
                     e.target.value === "" ? null : Number(e.target.value);
 
                   setItems((prev) =>
-                    prev.map((it) =>
-                      it.id === item.id ? { ...it, totalEpisode: value } : it
-                    )
+                    prev.map((it) => {
+                      if (it.id !== item.id) return it;
+
+                      if (it.status === "completed") {
+                        return {
+                          ...it,
+                          totalEpisode: value,
+                          currentEpisode: value,
+                        };
+                      }
+
+                      return { ...it, totalEpisode: value };
+                    })
                   );
                 }}
+
                 onBlur={(e) => {
                   const value =
                     e.target.value === "" ? null : Number(e.target.value);
 
-                  updateItem(item.id, { totalEpisode: value });
+                  if (item.status === "completed") {
+                    updateItem(item.id, {
+                      totalEpisode: value,
+                      currentEpisode: value,
+                    });
+                  } else {
+                    updateItem(item.id, { totalEpisode: value });
+                  }
                 }}
+
                 className="w-14 border rounded px-1"
               />
 
