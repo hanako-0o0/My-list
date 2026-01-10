@@ -144,12 +144,6 @@ export default function Home() {
     try {
       // フィルターされている状態から初期値を取得
       const newStatus = filter === "all" ? "planToWatch" : filter;
-
-      // ★ ここ追加
-      const defaultTotalEpisode = 10;
-      const defaultCurrentEpisode =
-        newStatus === "completed" ? defaultTotalEpisode : null;
-
       const newGenre = genreFilter === "all" ? "アニメ" : genreFilter;
 
       const newItem: Omit<Item, "id"> = {
@@ -157,8 +151,8 @@ export default function Home() {
         status: newStatus,
         rating: 0,
         comment: "",
-        currentEpisode: defaultCurrentEpisode, // ← ここ
-        totalEpisode: defaultTotalEpisode,
+        currentEpisode: null,
+        totalEpisode: 10,
         season: null,
         genre: newGenre,
         userId,
@@ -432,22 +426,11 @@ export default function Home() {
             {/* 状態 */}
             <select
               value={item.status}
-              onChange={(e) => {
-                const newStatus = e.target.value as Item["status"];
-
-                // 見終わったにしたら currentEpisode = totalEpisode
-                if (newStatus === "completed") {
-                  updateItem(item.id, {
-                    status: newStatus,
-                    currentEpisode: item.totalEpisode ?? null,
-                  });
-                } else {
-                  updateItem(item.id, { status: newStatus });
-                }
-              }}
+              onChange={(e) =>
+                updateItem(item.id, { status: e.target.value as Item["status"] })
+              }
               className="text-xs mb-1 border rounded px-1 py-0.5"
             >
-
               <option value="planToWatch">見る予定</option>
               <option value="watching">見てる</option>
               <option value="completed">見終わった</option>
