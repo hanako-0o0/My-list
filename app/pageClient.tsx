@@ -229,6 +229,8 @@ export default function Home() {
     router.push("/auth");
   };
 
+  const resultCount = filteredItems.length;
+
   return (
     <main className="min-h-screen bg-sky-50 p-4">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">My List</h1>
@@ -314,8 +316,14 @@ export default function Home() {
         })}
       </div>
 
+
       {/* 検索バー */}
       <div className="relative mb-4">
+        {/* 件数表示 */}
+        <div className="absolute right-2 -top-5 text-xs text-gray-500">
+          {filteredItems.length} / {items.length} 件
+        </div>
+
         <input
           type="text"
           placeholder="タイトルで検索"
@@ -323,7 +331,7 @@ export default function Home() {
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.currentTarget.blur(); // Enterで確定（キーボード閉じる）
+              e.currentTarget.blur();
             }
           }}
           className="w-full px-3 py-2 pr-10 border rounded shadow-sm text-sm"
@@ -339,6 +347,7 @@ export default function Home() {
           </button>
         )}
       </div>
+
 
       {/* お気に入りボタン */}
       <button
