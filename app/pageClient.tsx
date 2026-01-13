@@ -64,6 +64,7 @@ export default function Home() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
+  const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
 
 
 
@@ -359,294 +360,540 @@ export default function Home() {
         ❤️ お気に入り
       </button>
 
+      {/* パネル切り替え */}
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={() => setPanelType("grid")}
+          className={`px-3 py-1 rounded-full text-sm ${
+            panelType === "grid" ? "bg-sky-400 text-white" : "bg-white shadow"
+          }`}
+        >
+          通常
+        </button>
+
+        <button
+          onClick={() => setPanelType("wide")}
+          className={`px-3 py-1 rounded-full text-sm ${
+            panelType === "wide" ? "bg-sky-400 text-white" : "bg-white shadow"
+          }`}
+        >
+          横
+        </button>
+      </div>
+
       {/* リスト一覧 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {filteredItems.map((item) => (
-          <div
-            key={item.id}
-            className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
-          >
-
-            {/* ❤️ お気に入りボタン */}
-            <button
-              onClick={() => updateItem(item.id, { favorite: !item.favorite })}
-              className="absolute top-2 right-2 text-xl z-10"
-            >
-              {item.favorite ? "❤️" : "🤍"}
-            </button>
-            
-            {/* 画像表示 16:9 */}
+      <div
+        className={
+          panelType === "grid"
+            ? "grid grid-cols-2 sm:grid-cols-3 gap-4"
+            : "flex flex-col gap-3"
+        }
+>
+        {filteredItems.map((item) =>
+          panelType === "grid" ? (
+            /* ===== 通常カード（既存） ===== */
             <div
-              className={`w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400
-                ${draggingItemId === item.id ? "bg-sky-200 border-sky-500" : ""}`}
-              onDrop={(e) => {
-                e.preventDefault();  // ← これで新しいタブが開かないようにする
-                handleDrop(e, item.id);
-                setDraggingItemId(null);
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();  // ← 必須
-                setDraggingItemId(item.id);
-              }}
-              onDragLeave={() => setDraggingItemId(null)}
+              key={item.id}
+              className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
             >
-              {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                "ここに画像をドロップ"
-              )}
-            </div>
+              {/* ❤️ お気に入り */}
+              <button
+                onClick={() => updateItem(item.id, { favorite: !item.favorite })}
+                className="absolute top-2 right-2 text-xl z-10"
+              >
+                {item.favorite ? "❤️" : "🤍"}
+              </button>
 
+              {/* 画像 */}
+              <div
+                className={`w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400`}
+              >
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  "ここに画像"
+                )}
+              </div>
 
-            {/* 画像アップロード */}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files?.[0]) handleImageUpload(item.id, e.target.files[0]);
-              }}
-              className="text-xs mb-1"
-            />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0])
+                    handleImageUpload(item.id, e.target.files[0]);
+                }}
+                className="text-xs mb-1"
+              />
 
-            {/* タイトル */}
-            <input
-              type="text"
-              value={localTitles[item.id] ?? item.title}
-              onChange={(e) => {
-                setLocalTitles((prev) => ({
-                  ...prev,
-                  [item.id]: e.target.value,
-                }));
-              }}
-              onBlur={(e) => {
-                const value = e.target.value;
-
-                updateItem(item.id, { title: value, isNew: false });
-
-                setLocalTitles((prev) => {
-                  const copy = { ...prev };
-                  delete copy[item.id];
-                  return copy;
-                });
-              }}
-              className="w-full text-sm font-semibold text-gray-800 mb-1 border-b border-gray-300"
-            />
-
-
-            {/* 状態 */}
-            <select
-              value={item.status}
-              onChange={(e) => {
-                const newStatus = e.target.value as Item["status"];
-
-                if (newStatus === "completed") {
-                  const syncedValue = item.totalEpisode ?? item.currentEpisode ?? 0;
-
-                  updateItem(item.id, {
-                    status: newStatus,
-                    currentEpisode: syncedValue,
-                    totalEpisode: syncedValue,
-                  });
-                } else {
-                  updateItem(item.id, { status: newStatus });
+              <input
+                type="text"
+                value={localTitles[item.id] ?? item.title}
+                onChange={(e) =>
+                  setLocalTitles((prev) => ({
+                    ...prev,
+                    [item.id]: e.target.value,
+                  }))
                 }
-              }}
+                onBlur={(e) => {
+                  updateItem(item.id, { title: e.target.value, isNew: false });
+                  setLocalTitles((prev) => {
+                    const copy = { ...prev };
+                    delete copy[item.id];
+                    return copy;
+                  });
+                }}
+                className="w-full text-sm font-semibold mb-1 border-b"
+              />
 
-              className="text-xs mb-1 border rounded px-1 py-0.5"
-            >
-              <option value="planToWatch">見る予定</option>
-              <option value="watching">見てる</option>
-              <option value="completed">見終わった</option>
-              <option value="dropped">やめた</option>
-            </select>
+              <select
+                value={item.status}
+                onChange={(e) => {
+                  const newStatus = e.target.value as Item["status"];
+                  if (newStatus === "completed") {
+                    const v =
+                      item.totalEpisode ?? item.currentEpisode ?? 0;
+                    updateItem(item.id, {
+                      status: newStatus,
+                      currentEpisode: v,
+                      totalEpisode: v,
+                    });
+                  } else {
+                    updateItem(item.id, { status: newStatus });
+                  }
+                }}
+                className="text-xs mb-1 border rounded px-1"
+              >
+                <option value="planToWatch">見る予定</option>
+                <option value="watching">見てる</option>
+                <option value="completed">見終わった</option>
+                <option value="dropped">やめた</option>
+              </select>
 
-            {/* ジャンル */}
-            <select
-              value={item.genre || "アニメ"}
-              onChange={(e) => updateItem(item.id, { genre: e.target.value as Item["genre"] })}
-              className="text-xs mb-1 border rounded px-1 py-0.5"
-            >
-              <option value="アニメ">アニメ</option>
-              <option value="ドラマ">ドラマ</option>
-              <option value="映画">映画</option>
-            </select>
+              <select
+                value={item.genre || "アニメ"}
+                onChange={(e) =>
+                  updateItem(item.id, {
+                    genre: e.target.value as Item["genre"],
+                  })
+                }
+                className="text-xs mb-1 border rounded px-1"
+              >
+                <option value="アニメ">アニメ</option>
+                <option value="ドラマ">ドラマ</option>
+                <option value="映画">映画</option>
+              </select>
 
-            {/* 星評価 */}
-            <StarRating
-              rating={item.rating}
-              onChange={(r) => updateItem(item.id, { rating: r })}
-            />
+              <StarRating
+                rating={item.rating}
+                onChange={(r) => updateItem(item.id, { rating: r })}
+              />
 
-            {/* コメント */}
-            <textarea
-              value={item.comment}
-              onChange={(e) => {
-                setItems((prev) =>
-                  prev.map((it) =>
-                    it.id === item.id ? { ...it, comment: e.target.value } : it
+              <textarea
+                value={item.comment}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((it) =>
+                      it.id === item.id ? { ...it, comment: e.target.value } : it
+                    )
                   )
-                );
-              }}
-              onBlur={(e) => updateItem(item.id, { comment: e.target.value })}
-              className="w-full text-xs text-gray-600 mt-1 border rounded p-1"
-              rows={2}
-            />
+                }
+                onBlur={(e) =>
+                  updateItem(item.id, { comment: e.target.value })
+                }
+                className="w-full text-xs mt-1 border rounded p-1"
+                rows={2}
+              />
 
-            {/* 話数 / 映画用UI */}
-            {item.genre === "映画" ? (
-              /* 🎬 映画 */
-              <div className="flex items-center gap-1 text-xs mt-1">
-                <input
-                  type="number"
-                  placeholder="何作目"
-                  value={item.movieOrder ?? ""}
-                  onChange={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    setItems((prev) =>
-                      prev.map((it) =>
-                        it.id === item.id ? { ...it, movieOrder: value } : it
+              {/* 話数 */}
+              {item.genre === "映画" ? (
+                <div className="flex items-center gap-1 text-xs mt-1">
+                  <input
+                    type="number"
+                    value={item.movieOrder ?? ""}
+                    onChange={(e) =>
+                      setItems((prev) =>
+                        prev.map((it) =>
+                          it.id === item.id
+                            ? {
+                                ...it,
+                                movieOrder:
+                                  e.target.value === ""
+                                    ? null
+                                    : Number(e.target.value),
+                              }
+                            : it
+                        )
                       )
-                    );
-                  }}
-                  onBlur={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    updateItem(item.id, { movieOrder: value });
-                  }}
-                  className="w-16 border rounded px-1"
-                />
-                <span>作目</span>
-              </div>
-            ) : (
-              /* 📺 アニメ・ドラマ */
-              <div className="flex items-center gap-1 text-xs mt-1">
-                {/* 期 */}
-                <input
-                  type="number"
-                  placeholder="期"
-                  value={item.season ?? ""}
-                  onChange={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    setItems((prev) =>
-                      prev.map((it) =>
-                        it.id === item.id ? { ...it, season: value } : it
+                    }
+                    onBlur={(e) =>
+                      updateItem(item.id, {
+                        movieOrder:
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value),
+                      })
+                    }
+                    className="w-16 border rounded px-1"
+                  />
+                  <span>作目</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-xs mt-1">
+                  <input
+                    type="number"
+                    value={item.season ?? ""}
+                    onChange={(e) =>
+                      setItems((prev) =>
+                        prev.map((it) =>
+                          it.id === item.id
+                            ? {
+                                ...it,
+                                season:
+                                  e.target.value === ""
+                                    ? null
+                                    : Number(e.target.value),
+                              }
+                            : it
+                        )
                       )
-                    );
-                  }}
-                  onBlur={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    updateItem(item.id, { season: value });
-                  }}
-                  className="w-10 border rounded px-1"
-                />
-                <span>期</span>
-
-                {/* 現在話数 */}
-                <input
-                  type="number"
-                  placeholder="話"
-                  value={item.currentEpisode ?? ""}
-                  onChange={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    setItems((prev) =>
-                      prev.map((it) => {
-                        if (it.id !== item.id) return it;
-
-                        if (it.status === "completed") {
-                          return {
-                            ...it,
-                            currentEpisode: value,
-                            totalEpisode: value,
-                          };
-                        }
-
-                        return { ...it, currentEpisode: value };
-                      })
-                    );
-                  }}
-                  onBlur={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    if (item.status === "completed") {
-                      updateItem(item.id, {
-                        currentEpisode: value,
-                        totalEpisode: value,
-                      });
-                    } else {
-                      updateItem(item.id, { currentEpisode: value });
                     }
-                  }}
-                  className="w-12 border rounded px-1"
-                />
-
-                <span>話 /</span>
-
-                {/* 全話数 */}
-                <input
-                  type="number"
-                  placeholder="全話"
-                  value={item.totalEpisode ?? ""}
-                  onChange={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    setItems((prev) =>
-                      prev.map((it) => {
-                        if (it.id !== item.id) return it;
-
-                        if (it.status === "completed") {
-                          return {
-                            ...it,
-                            totalEpisode: value,
-                            currentEpisode: value,
-                          };
-                        }
-
-                        return { ...it, totalEpisode: value };
-                      })
-                    );
-                  }}
-                  onBlur={(e) => {
-                    const value =
-                      e.target.value === "" ? null : Number(e.target.value);
-
-                    if (item.status === "completed") {
+                    onBlur={(e) =>
                       updateItem(item.id, {
-                        totalEpisode: value,
-                        currentEpisode: value,
-                      });
-                    } else {
-                      updateItem(item.id, { totalEpisode: value });
+                        season:
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value),
+                      })
                     }
-                  }}
-                  className="w-14 border rounded px-1"
-                />
-                <span>話</span>
-              </div>
-            )}
-            {/* 削除 */}
-            <button
-              onClick={() => removeItem(item.id)}
-              className="mt-1 text-red-500 text-xs hover:underline"
+                    className="w-10 border rounded px-1"
+                  />
+                  <span>期</span>
+
+                  <input
+                    type="number"
+                    value={item.currentEpisode ?? ""}
+                    onChange={(e) =>
+                      setItems((prev) =>
+                        prev.map((it) =>
+                          it.id === item.id
+                            ? {
+                                ...it,
+                                currentEpisode:
+                                  e.target.value === ""
+                                    ? null
+                                    : Number(e.target.value),
+                              }
+                            : it
+                        )
+                      )
+                    }
+                    onBlur={(e) =>
+                      updateItem(item.id, {
+                        currentEpisode:
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value),
+                      })
+                    }
+                    className="w-12 border rounded px-1"
+                  />
+
+                  <span>/</span>
+
+                  <input
+                    type="number"
+                    value={item.totalEpisode ?? ""}
+                    onChange={(e) =>
+                      setItems((prev) =>
+                        prev.map((it) =>
+                          it.id === item.id
+                            ? {
+                                ...it,
+                                totalEpisode:
+                                  e.target.value === ""
+                                    ? null
+                                    : Number(e.target.value),
+                              }
+                            : it
+                        )
+                      )
+                    }
+                    onBlur={(e) =>
+                      updateItem(item.id, {
+                        totalEpisode:
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value),
+                      })
+                    }
+                    className="w-14 border rounded px-1"
+                  />
+                  <span>話</span>
+                </div>
+              )}
+
+              <button
+                onClick={() => removeItem(item.id)}
+                className="text-xs text-red-500 mt-1"
+              >
+                削除
+              </button>
+            </div>
+          ) : (
+            /* ===== 横パネル ===== */
+            <div
+              key={item.id}
+              className="relative bg-white rounded-xl shadow-md p-3 flex gap-3 hover:shadow-lg transition"
             >
-              削除
-            </button>
-          </div>
-        ))}
+              {/* ❤️ お気に入り */}
+              <button
+                onClick={() => updateItem(item.id, { favorite: !item.favorite })}
+                className="absolute top-2 right-2 text-xl z-10"
+              >
+                {item.favorite ? "❤️" : "🤍"}
+              </button>
+
+              {/* 左：画像 */}
+              <div className="h-32 aspect-[9/16] rounded-lg overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400 flex-shrink-0">
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  "ここに画像"
+                )}
+              </div>
+
+              {/* 右：情報 */}
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={localTitles[item.id] ?? item.title}
+                  onChange={(e) =>
+                    setLocalTitles((prev) => ({
+                      ...prev,
+                      [item.id]: e.target.value,
+                    }))
+                  }
+                  onBlur={(e) => {
+                    updateItem(item.id, { title: e.target.value, isNew: false });
+                    setLocalTitles((prev) => {
+                      const copy = { ...prev };
+                      delete copy[item.id];
+                      return copy;
+                    });
+                  }}
+                  className="w-full text-sm font-semibold mb-1 border-b"
+                />
+
+                <div className="flex gap-2 mb-1">
+                  <select
+                    value={item.status}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as Item["status"];
+                      if (newStatus === "completed") {
+                        const v =
+                          item.totalEpisode ?? item.currentEpisode ?? 0;
+                        updateItem(item.id, {
+                          status: newStatus,
+                          currentEpisode: v,
+                          totalEpisode: v,
+                        });
+                      } else {
+                        updateItem(item.id, { status: newStatus });
+                      }
+                    }}
+                    className="text-xs border rounded px-1"
+                  >
+                    <option value="planToWatch">見る予定</option>
+                    <option value="watching">見てる</option>
+                    <option value="completed">見終わった</option>
+                    <option value="dropped">やめた</option>
+                  </select>
+
+                  <select
+                    value={item.genre || "アニメ"}
+                    onChange={(e) =>
+                      updateItem(item.id, {
+                        genre: e.target.value as Item["genre"],
+                      })
+                    }
+                    className="text-xs border rounded px-1"
+                  >
+                    <option value="アニメ">アニメ</option>
+                    <option value="ドラマ">ドラマ</option>
+                    <option value="映画">映画</option>
+                  </select>
+                </div>
+
+                <StarRating
+                  rating={item.rating}
+                  onChange={(r) => updateItem(item.id, { rating: r })}
+                />
+
+                <textarea
+                  value={item.comment}
+                  onChange={(e) =>
+                    setItems((prev) =>
+                      prev.map((it) =>
+                        it.id === item.id
+                          ? { ...it, comment: e.target.value }
+                          : it
+                      )
+                    )
+                  }
+                  onBlur={(e) =>
+                    updateItem(item.id, { comment: e.target.value })
+                  }
+                  className="w-full text-xs mt-1 border rounded p-1"
+                  rows={2}
+                />
+
+                {/* 話数UI（完全一致） */}
+                {item.genre === "映画" ? (
+                  <div className="flex items-center gap-1 text-xs mt-1">
+                    <input
+                      type="number"
+                      value={item.movieOrder ?? ""}
+                      onChange={(e) =>
+                        setItems((prev) =>
+                          prev.map((it) =>
+                            it.id === item.id
+                              ? {
+                                  ...it,
+                                  movieOrder:
+                                    e.target.value === ""
+                                      ? null
+                                      : Number(e.target.value),
+                                }
+                              : it
+                          )
+                        )
+                      }
+                      onBlur={(e) =>
+                        updateItem(item.id, {
+                          movieOrder:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        })
+                      }
+                      className="w-16 border rounded px-1"
+                    />
+                    <span>作目</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-xs mt-1">
+                    <input
+                      type="number"
+                      value={item.season ?? ""}
+                      onChange={(e) =>
+                        setItems((prev) =>
+                          prev.map((it) =>
+                            it.id === item.id
+                              ? {
+                                  ...it,
+                                  season:
+                                    e.target.value === ""
+                                      ? null
+                                      : Number(e.target.value),
+                                }
+                              : it
+                          )
+                        )
+                      }
+                      onBlur={(e) =>
+                        updateItem(item.id, {
+                          season:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        })
+                      }
+                      className="w-10 border rounded px-1"
+                    />
+                    <span>期</span>
+
+                    <input
+                      type="number"
+                      value={item.currentEpisode ?? ""}
+                      onChange={(e) =>
+                        setItems((prev) =>
+                          prev.map((it) =>
+                            it.id === item.id
+                              ? {
+                                  ...it,
+                                  currentEpisode:
+                                    e.target.value === ""
+                                      ? null
+                                      : Number(e.target.value),
+                                }
+                              : it
+                          )
+                        )
+                      }
+                      onBlur={(e) =>
+                        updateItem(item.id, {
+                          currentEpisode:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        })
+                      }
+                      className="w-12 border rounded px-1"
+                    />
+
+                    <span>/</span>
+
+                    <input
+                      type="number"
+                      value={item.totalEpisode ?? ""}
+                      onChange={(e) =>
+                        setItems((prev) =>
+                          prev.map((it) =>
+                            it.id === item.id
+                              ? {
+                                  ...it,
+                                  totalEpisode:
+                                    e.target.value === ""
+                                      ? null
+                                      : Number(e.target.value),
+                                }
+                              : it
+                          )
+                        )
+                      }
+                      onBlur={(e) =>
+                        updateItem(item.id, {
+                          totalEpisode:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        })
+                      }
+                      className="w-14 border rounded px-1"
+                    />
+                    <span>話</span>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => removeItem(item.id)}
+                  className="text-xs text-red-500 mt-1"
+                >
+                  削除
+                </button>
+              </div>
+            </div>
+          )
+        )}
+
         <div ref={bottomRef} />
       </div>
 
