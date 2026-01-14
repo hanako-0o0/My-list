@@ -386,10 +386,9 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4"
-            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+            : "flex flex-col gap-3"
         }
-      >
-
+>
         {filteredItems.map((item) =>
           panelType === "grid" ? (
             /* ===== 通常カード（既存） ===== */
@@ -648,13 +647,8 @@ export default function Home() {
             /* ===== 横パネル ===== */
             <div
               key={item.id}
-              className="
-                relative bg-white rounded-xl shadow-md
-                p-2 flex gap-2 hover:shadow-lg transition
-                max-w-sm
-              "
+              className="relative bg-white rounded-xl shadow-md p-3 flex gap-3 hover:shadow-lg transition"
             >
-
               {/* ❤️ お気に入り */}
               <button
                 onClick={() => updateItem(item.id, { favorite: !item.favorite })}
@@ -664,19 +658,7 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div
-                className="
-                  h-full
-                  aspect-[16/9]
-                  self-stretch
-                  rounded-lg overflow-hidden
-                  bg-sky-100
-                  flex items-center justify-center
-                  text-xs text-gray-400
-                  border border-dashed border-gray-400
-                  flex-shrink-0
-                "
-              >
+              <div className="h-32 aspect-[9/16] rounded-lg overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400 flex-shrink-0">
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
@@ -926,5 +908,7 @@ export default function Home() {
     </main>
   );
 }
+
+
 
 
