@@ -386,7 +386,7 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4"
-            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         }
 >
         {filteredItems.map((item) =>
@@ -659,7 +659,7 @@ export default function Home() {
             /* ===== 横パネル ===== */
             <div
               key={item.id}
-              className="relative bg-white rounded-xl shadow-md p-3 flex gap-3 hover:shadow-lg transition"
+              className="relative bg-white rounded-xl shadow-md p-3 flex gap-3 items-stretch hover:shadow-lg transition"
             >
               {/* ❤️ お気に入り */}
               <button
@@ -670,7 +670,19 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="h-32 aspect-[9/16] rounded-lg overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400 flex-shrink-0">
+              <div
+                className="
+                  h-full
+                  aspect-[16/9]
+                  rounded-lg
+                  overflow-hidden
+                  bg-sky-100
+                  flex items-center justify-center
+                  text-xs text-gray-400
+                  border border-dashed border-gray-400
+                  flex-shrink-0
+                "
+              >
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
@@ -683,7 +695,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col justify-between">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
