@@ -386,7 +386,7 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4"
-            : "flex flex-col gap-3"
+            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         }
 >
         {filteredItems.map((item) =>
@@ -405,8 +405,20 @@ export default function Home() {
               </button>
 
               {/* 画像 */}
+              {/* 左：画像（通常カードと同じ高さ・16:9） */}
               <div
-                className={`w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400`}
+                className="
+                  w-full
+                  aspect-[16/9]
+                  max-w-[180px]
+                  rounded-lg
+                  overflow-hidden
+                  bg-sky-100
+                  flex items-center justify-center
+                  text-xs text-gray-400
+                  border border-dashed border-gray-400
+                  flex-shrink-0
+                "
               >
                 {item.imageUrl ? (
                   <img
