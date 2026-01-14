@@ -664,16 +664,28 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="h-32 aspect-[9/16] rounded-lg overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400 flex-shrink-0">
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  "ここに画像"
-                )}
+              <div className="flex items-center">
+                <div
+                  className="
+                    aspect-[16/9]
+                    h-full max-h-32
+                    rounded-lg overflow-hidden
+                    bg-sky-100 flex items-center justify-center
+                    text-xs text-gray-400
+                    border border-dashed border-gray-400
+                    flex-shrink-0
+                  "
+                >
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    "ここに画像"
+                  )}
+                </div>
               </div>
 
               {/* 右：情報 */}
