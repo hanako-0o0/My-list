@@ -650,7 +650,7 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-3
+                flex gap-3 items-center
               "
             >
 
