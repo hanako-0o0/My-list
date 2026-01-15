@@ -386,9 +386,9 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4"
-            : "flex flex-col gap-3"
+            : "grid grid-cols-2 xl:grid-cols-4 gap-4"
         }
->
+      >
         {filteredItems.map((item) =>
           panelType === "grid" ? (
             /* ===== 通常カード（既存） ===== */
