@@ -647,8 +647,13 @@ export default function Home() {
             /* ===== 横パネル ===== */
             <div
               key={item.id}
-              className="relative bg-white rounded-xl shadow-md p-3 flex gap-3 hover:shadow-lg transition"
+              className="
+                relative bg-white rounded-xl shadow-md
+                p-3 hover:shadow-lg transition
+                flex gap-3
+              "
             >
+
               {/* ❤️ お気に入り */}
               <button
                 onClick={() => updateItem(item.id, { favorite: !item.favorite })}
@@ -658,7 +663,17 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="h-32 aspect-[9/16] rounded-lg overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400 flex-shrink-0">
+              <div
+                className="
+                  h-32 aspect-[9/16]
+                  rounded-lg overflow-hidden
+                  bg-sky-100 flex items-center justify-center
+                  text-xs text-gray-400
+                  border border-dashed border-gray-400
+                  flex-shrink-0
+                "
+              >
+
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
