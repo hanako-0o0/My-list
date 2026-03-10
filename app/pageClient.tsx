@@ -666,7 +666,8 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-3 items-center
+                flex gap-4 items-start
+                overflow-hidden
               "
             >
 
@@ -679,7 +680,7 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-36 flex-shrink-0">
 
                 <div
                   onDrop={(e) => handleDrop(e, item.id)}
@@ -717,7 +718,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
