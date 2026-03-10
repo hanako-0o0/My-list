@@ -422,8 +422,26 @@ export default function Home() {
               <div
                 onDrop={(e) => handleDrop(e, item.id)}
                 onDragOver={handleDragOver}
-                className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400"
+                className="
+                  h-44 aspect-[9/16]
+                  rounded-lg overflow-hidden
+                  bg-sky-100 flex items-center justify-center
+                  text-xs text-gray-400
+                  border border-dashed border-gray-400
+                  flex-shrink-0
+                "
               >
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0])
+                    handleImageUpload(item.id, e.target.files[0]);
+                }}
+                className="text-xs mt-1"
+              />
+
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
@@ -705,7 +723,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1">
+              <div className="flex-1 text-sm">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
