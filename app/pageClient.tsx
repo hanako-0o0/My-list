@@ -406,7 +406,9 @@ export default function Home() {
 
               {/* 画像 */}
               <div
-                className={`w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400`}
+                onDrop={(e) => handleDrop(e, item.id)}
+                onDragOver={handleDragOver}
+                className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400"
               >
                 {item.imageUrl ? (
                   <img
