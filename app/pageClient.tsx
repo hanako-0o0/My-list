@@ -705,14 +705,21 @@ export default function Home() {
                   )}
                 </div>
 
+                <label
+                  htmlFor={`file-${item.id}`}
+                  className="text-xs cursor-pointer text-gray-700 hover:text-gray-900 mt-1 block"
+                >
+                  {item.imageUrl ? "File Chosen" : "Choose File"}
+                </label>
                 <input
+                  id={`file-${item.id}`}
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files?.[0])
                       handleImageUpload(item.id, e.target.files[0]);
                   }}
-                  className="text-xs mt-1"
+                  className="hidden"
                 />
 
               </div>
