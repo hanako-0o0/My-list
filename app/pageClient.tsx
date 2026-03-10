@@ -399,8 +399,8 @@ export default function Home() {
       <div
         className={
           panelType === "grid"
-            ? "grid grid-cols-2 sm:grid-cols-3 gap-4"
-            : "grid grid-cols-2 xl:grid-cols-4 gap-4"
+            ? "grid grid-cols-2 sm:grid-cols-3 gap-4 justify-start"
+            : "grid grid-cols-2 xl:grid-cols-4 gap-4 justify-start"
         }
       >
         {filteredItems.map((item) =>
