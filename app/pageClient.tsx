@@ -431,7 +431,10 @@ export default function Home() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  "ここに画像"
+                  <div className="flex flex-col items-center text-gray-400">
+                    <span className="text-3xl">＋</span>
+                    <span className="text-xs">画像追加</span>
+                  </div>
                 )}
               </div>
 
