@@ -680,8 +680,7 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="flex flex-col items-center w-36 flex-shrink-0">
-
+              <div className="flex flex-col items-start w-36 flex-shrink-0">
                 <div
                   onDrop={(e) => handleDrop(e, item.id)}
                   onDragOver={handleDragOver}
@@ -721,7 +720,6 @@ export default function Home() {
                   }}
                   className="hidden"
                 />
-
               </div>
 
               {/* 右：情報 */}
