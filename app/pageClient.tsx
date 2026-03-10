@@ -200,10 +200,29 @@ export default function Home() {
 
   const handleImageUpload = (id: string, file: File) => {
     const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result as string;
-      await updateItem(id, { imageUrl: base64 });
+
+    reader.onload = () => {
+      const img = new Image();
+      img.src = reader.result as string;
+
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const MAX_WIDTH = 400;
+        const scale = MAX_WIDTH / img.width;
+
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scale;
+
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const compressed = canvas.toDataURL("image/jpeg", 0.7);
+
+        await updateItem(id, { imageUrl: compressed });
+      };
     };
+
     reader.readAsDataURL(file);
   };
 
@@ -212,12 +231,7 @@ export default function Home() {
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result as string;
-      await updateItem(id, { imageUrl: base64 });
-    };
-    reader.readAsDataURL(file);
+    handleImageUpload(id, file);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
