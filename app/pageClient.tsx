@@ -422,26 +422,8 @@ export default function Home() {
               <div
                 onDrop={(e) => handleDrop(e, item.id)}
                 onDragOver={handleDragOver}
-                className="
-                  h-44 aspect-[9/16]
-                  rounded-lg overflow-hidden
-                  bg-sky-100 flex items-center justify-center
-                  text-xs text-gray-400
-                  border border-dashed border-gray-400
-                  flex-shrink-0
-                "
+                className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400"
               >
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files?.[0])
-                    handleImageUpload(item.id, e.target.files[0]);
-                }}
-                className="text-xs mt-1"
-              />
-
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
@@ -449,10 +431,7 @@ export default function Home() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="flex flex-col items-center text-gray-400">
-                    <span className="text-3xl">＋</span>
-                    <span className="text-xs">画像追加</span>
-                  </div>
+                  "ここに画像"
                 )}
               </div>
 
@@ -700,30 +679,45 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div
-                className="
-                  h-32 aspect-[9/16]
-                  rounded-lg overflow-hidden
-                  bg-sky-100 flex items-center justify-center
-                  text-xs text-gray-400
-                  border border-dashed border-gray-400
-                  flex-shrink-0
-                "
-              >
+              <div className="flex flex-col items-center">
 
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  "ここに画像"
-                )}
+                <div
+                  onDrop={(e) => handleDrop(e, item.id)}
+                  onDragOver={handleDragOver}
+                  className="
+                    h-44 aspect-[9/16]
+                    rounded-lg overflow-hidden
+                    bg-sky-100 flex items-center justify-center
+                    text-xs text-gray-400
+                    border border-dashed border-gray-400
+                    flex-shrink-0
+                  "
+                >
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    "+ 画像追加"
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files?.[0])
+                      handleImageUpload(item.id, e.target.files[0]);
+                  }}
+                  className="text-xs mt-1"
+                />
+
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1 text-sm">
+              <div className="flex-1">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
@@ -960,6 +954,8 @@ export default function Home() {
     </main>
   );
 }
+
+
 
 
 
