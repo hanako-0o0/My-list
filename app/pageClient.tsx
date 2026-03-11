@@ -723,7 +723,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1 min-w-0">
+              <div className="flex flex-col justify-start min-w-0 ml-2">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
