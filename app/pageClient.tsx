@@ -679,12 +679,12 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="flex flex-col items-start w-36 flex-shrink-0">
+              <div className="flex flex-col items-start flex-shrink-0">
                 <div
                   onDrop={(e) => handleDrop(e, item.id)}
                   onDragOver={handleDragOver}
                   className="
-                    h-44 aspect-[9/16]
+                    w-28 h-44
                     rounded-lg overflow-hidden
                     bg-sky-100 flex items-center justify-center
                     text-xs text-gray-400
