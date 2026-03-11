@@ -666,7 +666,7 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-0 items-start
+                flex gap-0 items-start justify-start
                 overflow-hidden
               "
             >
