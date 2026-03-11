@@ -400,7 +400,7 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4 justify-start"
-            : "grid grid-cols-2 xl:grid-cols-4 gap-4 justify-start"
+            : "grid grid-cols-2 xl:grid-cols-4 gap-3 justify-items-start"
         }
       >
         {filteredItems.map((item) =>
@@ -666,7 +666,7 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-0.5 items-start
+                flex gap-1 items-start justify-start
                 overflow-hidden
               "
             >
@@ -722,7 +722,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報部分を画像に寄せる */}
-              <div className="flex flex-col gap-0.5 pl-0.5 min-w-0">
+              <div className="flex flex-col gap-0.5 pl-1 flex-1 min-w-0 items-start">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
@@ -740,7 +740,7 @@ export default function Home() {
                       return copy;
                     });
                   }}
-                  className="w-full text-sm font-semibold mb-1 border-b"
+                  className="w-full text-sm font-semibold mb-1 border-b text-left"
                 />
 
                 <div className="flex gap-0.5 mb-1">
