@@ -920,7 +920,7 @@ export default function Home() {
 
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="text-xs text-red-500 mt-1"
+                  className="text-xs text-red-500 mt-2 self-start"
                 >
                   削除
                 </button>
