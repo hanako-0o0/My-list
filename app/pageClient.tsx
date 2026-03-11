@@ -663,7 +663,7 @@ export default function Home() {
 
               <button
                 onClick={() => removeItem(item.id)}
-                className="text-xs text-red-500 mt-1"
+                className="text-xs text-red-500 mt-1 ml-0"
               >
                 削除
               </button>
@@ -807,7 +807,7 @@ export default function Home() {
                   }
                   onBlur={(e) => updateItem(item.id, { comment: e.target.value })}
                   className="w-full text-xs mt-1 border rounded p-1"
-                  rows={2}
+                  rows={4}
                 />
 
                 {/* 話数UI */}
