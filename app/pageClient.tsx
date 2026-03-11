@@ -665,7 +665,7 @@ export default function Home() {
               key={item.id}
               className="
                 relative bg-white rounded-xl shadow-md
-                p-3 hover:shadow-lg transition
+                p-2 hover:shadow-lg transition
                 flex gap-0 items-start justify-start
                 overflow-hidden
               "
@@ -723,7 +723,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex flex-col justify-start min-w-0 ml-2">
+              <div className="flex flex-col justify-start min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
