@@ -62,6 +62,7 @@ export default function Home() {
   const [search, setSearch] = useState(initialSearch);
   const isComposing = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollRef = useRef(false);
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
@@ -118,8 +119,11 @@ export default function Home() {
 
   // 新しいアイテムが追加されたら一番下までスクロール
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [items.length]);
+    if (shouldScrollRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      shouldScrollRef.current = false;
+    }
+  }, [items]);
 
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
@@ -170,7 +174,12 @@ export default function Home() {
       const docRef = await addDoc(collection(db, "items"), newItem);
 
       // 配列の最後に追加
+      shouldScrollRef.current = true;
       setItems((prev) => [...prev, { ...newItem, id: docRef.id }]);
+
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
     } catch (e) {
       console.error("Failed to add item:", e);
     }
