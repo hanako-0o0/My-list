@@ -666,7 +666,7 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-1 items-start
+                flex gap-0.5 items-start
                 overflow-hidden
               "
             >
@@ -722,7 +722,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報部分を画像に寄せる */}
-              <div className="flex flex-col gap-1 min-w-0">
+              <div className="flex flex-col gap-0.5 pl-0.5 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
@@ -743,7 +743,7 @@ export default function Home() {
                   className="w-full text-sm font-semibold mb-1 border-b"
                 />
 
-                <div className="flex gap-2 mb-1">
+                <div className="flex gap-0.5 mb-1">
                   <select
                     value={item.status}
                     onChange={(e) => {
@@ -803,7 +803,7 @@ export default function Home() {
 
                 {/* 話数UI */}
                 {item.genre === "映画" ? (
-                  <div className="flex items-center gap-1 text-xs mt-1">
+                  <div className="flex items-center gap-0.5 text-xs mt-1">
                     <input
                       type="number"
                       value={item.movieOrder ?? ""}
@@ -830,7 +830,7 @@ export default function Home() {
                     <span>作目</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-xs mt-1">
+                  <div className="flex items-center gap-0.5 text-xs mt-1">
                     <input
                       type="number"
                       value={item.season ?? ""}
