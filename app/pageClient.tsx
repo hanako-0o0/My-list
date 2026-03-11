@@ -723,7 +723,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1 flex flex-col items-start min-w-0 ml-2">
+              <div className="flex-1 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
@@ -809,7 +809,7 @@ export default function Home() {
 
                 {/* 話数UI（完全一致） */}
                 {item.genre === "映画" ? (
-                  <div className="flex items-center gap-1 text-xs mt-1 w-full">
+                  <div className="flex items-center gap-1 text-xs mt-1">
                     <input
                       type="number"
                       value={item.movieOrder ?? ""}
@@ -841,7 +841,7 @@ export default function Home() {
                     <span>作目</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-xs mt-1 w-full">
+                  <div className="flex items-center gap-1 text-xs mt-1">
                     <input
                       type="number"
                       value={item.season ?? ""}
