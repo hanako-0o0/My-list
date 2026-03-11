@@ -666,10 +666,11 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-2 items-start
+                flex gap-1 items-start
                 overflow-hidden
               "
             >
+
               {/* ❤️ お気に入り */}
               <button
                 onClick={() => updateItem(item.id, { favorite: !item.favorite })}
@@ -722,7 +723,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報 */}
-              <div className="flex-1 flex flex-col items-end min-w-0 ml-2">
+              <div className="flex-1 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
@@ -740,7 +741,7 @@ export default function Home() {
                       return copy;
                     });
                   }}
-                  className="w-full text-sm font-semibold mb-1 border-b text-right"
+                  className="w-full text-sm font-semibold mb-1 border-b"
                 />
 
                 <div className="flex gap-2 mb-1">
@@ -793,18 +794,20 @@ export default function Home() {
                   onChange={(e) =>
                     setItems((prev) =>
                       prev.map((it) =>
-                        it.id === item.id ? { ...it, comment: e.target.value } : it
+                        it.id === item.id
+                          ? { ...it, comment: e.target.value }
+                          : it
                       )
                     )
                   }
                   onBlur={(e) =>
                     updateItem(item.id, { comment: e.target.value })
                   }
-                  className="w-full text-xs mt-1 border rounded p-1 text-right"
+                  className="w-full text-xs mt-1 border rounded p-1"
                   rows={2}
                 />
 
-                {/* 話数UI（映画・シリーズ） */}
+                {/* 話数UI（完全一致） */}
                 {item.genre === "映画" ? (
                   <div className="flex items-center gap-1 text-xs mt-1">
                     <input
@@ -957,6 +960,8 @@ export default function Home() {
     </main>
   );
 }
+
+
 
 
 
