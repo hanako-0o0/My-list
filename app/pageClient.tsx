@@ -400,7 +400,7 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4 justify-start"
-            : "grid grid-cols-1 gap-4 justify-start"
+            : "grid grid-cols-2 xl:grid-cols-4 gap-4 justify-start"
         }
       >
         {filteredItems.map((item) =>
@@ -665,12 +665,11 @@ export default function Home() {
               key={item.id}
               className="
                 relative bg-white rounded-xl shadow-md
-                p-2 hover:shadow-lg transition
-                flex gap-0 items-start justify-start
+                p-3 hover:shadow-lg transition
+                flex gap-1 items-start
                 overflow-hidden
               "
             >
-
               {/* ❤️ お気に入り */}
               <button
                 onClick={() => updateItem(item.id, { favorite: !item.favorite })}
@@ -722,8 +721,8 @@ export default function Home() {
                 />
               </div>
 
-              {/* 右：情報 */}
-              <div className="flex flex-col justify-start min-w-0">
+              {/* 右：情報部分を画像に寄せる */}
+              <div className="flex flex-col gap-1 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
@@ -750,8 +749,7 @@ export default function Home() {
                     onChange={(e) => {
                       const newStatus = e.target.value as Item["status"];
                       if (newStatus === "completed") {
-                        const v =
-                          item.totalEpisode ?? item.currentEpisode ?? 0;
+                        const v = item.totalEpisode ?? item.currentEpisode ?? 0;
                         updateItem(item.id, {
                           status: newStatus,
                           currentEpisode: v,
@@ -794,20 +792,16 @@ export default function Home() {
                   onChange={(e) =>
                     setItems((prev) =>
                       prev.map((it) =>
-                        it.id === item.id
-                          ? { ...it, comment: e.target.value }
-                          : it
+                        it.id === item.id ? { ...it, comment: e.target.value } : it
                       )
                     )
                   }
-                  onBlur={(e) =>
-                    updateItem(item.id, { comment: e.target.value })
-                  }
+                  onBlur={(e) => updateItem(item.id, { comment: e.target.value })}
                   className="w-full text-xs mt-1 border rounded p-1"
                   rows={2}
                 />
 
-                {/* 話数UI（完全一致） */}
+                {/* 話数UI */}
                 {item.genre === "映画" ? (
                   <div className="flex items-center gap-1 text-xs mt-1">
                     <input
@@ -820,9 +814,7 @@ export default function Home() {
                               ? {
                                   ...it,
                                   movieOrder:
-                                    e.target.value === ""
-                                      ? null
-                                      : Number(e.target.value),
+                                    e.target.value === "" ? null : Number(e.target.value),
                                 }
                               : it
                           )
@@ -830,10 +822,7 @@ export default function Home() {
                       }
                       onBlur={(e) =>
                         updateItem(item.id, {
-                          movieOrder:
-                            e.target.value === ""
-                              ? null
-                              : Number(e.target.value),
+                          movieOrder: e.target.value === "" ? null : Number(e.target.value),
                         })
                       }
                       className="w-16 border rounded px-1"
@@ -852,9 +841,7 @@ export default function Home() {
                               ? {
                                   ...it,
                                   season:
-                                    e.target.value === ""
-                                      ? null
-                                      : Number(e.target.value),
+                                    e.target.value === "" ? null : Number(e.target.value),
                                 }
                               : it
                           )
@@ -862,10 +849,7 @@ export default function Home() {
                       }
                       onBlur={(e) =>
                         updateItem(item.id, {
-                          season:
-                            e.target.value === ""
-                              ? null
-                              : Number(e.target.value),
+                          season: e.target.value === "" ? null : Number(e.target.value),
                         })
                       }
                       className="w-10 border rounded px-1"
@@ -882,9 +866,7 @@ export default function Home() {
                               ? {
                                   ...it,
                                   currentEpisode:
-                                    e.target.value === ""
-                                      ? null
-                                      : Number(e.target.value),
+                                    e.target.value === "" ? null : Number(e.target.value),
                                 }
                               : it
                           )
@@ -892,10 +874,7 @@ export default function Home() {
                       }
                       onBlur={(e) =>
                         updateItem(item.id, {
-                          currentEpisode:
-                            e.target.value === ""
-                              ? null
-                              : Number(e.target.value),
+                          currentEpisode: e.target.value === "" ? null : Number(e.target.value),
                         })
                       }
                       className="w-12 border rounded px-1"
@@ -913,9 +892,7 @@ export default function Home() {
                               ? {
                                   ...it,
                                   totalEpisode:
-                                    e.target.value === ""
-                                      ? null
-                                      : Number(e.target.value),
+                                    e.target.value === "" ? null : Number(e.target.value),
                                 }
                               : it
                           )
@@ -923,10 +900,7 @@ export default function Home() {
                       }
                       onBlur={(e) =>
                         updateItem(item.id, {
-                          totalEpisode:
-                            e.target.value === ""
-                              ? null
-                              : Number(e.target.value),
+                          totalEpisode: e.target.value === "" ? null : Number(e.target.value),
                         })
                       }
                       className="w-14 border rounded px-1"
