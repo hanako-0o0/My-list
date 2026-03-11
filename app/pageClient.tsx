@@ -400,7 +400,7 @@ export default function Home() {
         className={
           panelType === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 gap-4 justify-start"
-            : "grid grid-cols-2 xl:grid-cols-4 gap-3 justify-items-start"
+            : "grid grid-cols-2 xl:grid-cols-4 gap-4 justify-items-start"
         }
       >
         {filteredItems.map((item) =>
@@ -666,7 +666,7 @@ export default function Home() {
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
-                flex gap-1 items-start justify-start
+                flex gap-3 items-start justify-start w-full
                 overflow-hidden
               "
             >
@@ -705,7 +705,7 @@ export default function Home() {
 
                 <label
                   htmlFor={`file-${item.id}`}
-                  className="text-xs cursor-pointer text-gray-700 hover:text-gray-900 mt-1 block"
+                  className="text-xs cursor-pointer text-gray-700 hover:text-gray-900 mt-1 text-center w-full"
                 >
                   {item.imageUrl ? "File Chosen" : "Choose File"}
                 </label>
@@ -722,7 +722,7 @@ export default function Home() {
               </div>
 
               {/* 右：情報部分を画像に寄せる */}
-              <div className="flex flex-col gap-0.5 pl-1 flex-1 min-w-0 items-start">
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
