@@ -688,12 +688,12 @@ export default function Home() {
               </button>
 
               {/* 左：画像 */}
-              <div className="flex flex-col items-center w-40 flex-shrink-0">
+              <div className="flex flex-col items-start flex-shrink-0">
                 <div
                   onDrop={(e) => handleDrop(e, item.id)}
                   onDragOver={handleDragOver}
                   className="
-                    h-48 aspect-[9/16]
+                    w-28 h-44
                     rounded-lg overflow-hidden
                     bg-sky-100 flex items-center justify-center
                     text-xs text-gray-400
@@ -730,14 +730,16 @@ export default function Home() {
                 />
               </div>
 
-              {/* 右：情報部分 */}
-              <div className="flex flex-col flex-1 min-w-0 gap-1">
-                {/* タイトル */}
+              {/* 右：情報部分を画像に寄せる */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <input
                   type="text"
                   value={localTitles[item.id] ?? item.title}
                   onChange={(e) =>
-                    setLocalTitles((prev) => ({ ...prev, [item.id]: e.target.value }))
+                    setLocalTitles((prev) => ({
+                      ...prev,
+                      [item.id]: e.target.value,
+                    }))
                   }
                   onBlur={(e) => {
                     updateItem(item.id, { title: e.target.value, isNew: false });
@@ -747,11 +749,10 @@ export default function Home() {
                       return copy;
                     });
                   }}
-                  className="w-full text-sm font-semibold border-b"
+                  className="w-full text-sm font-semibold mb-1 border-b text-left"
                 />
 
-                {/* ステータスとジャンル */}
-                <div className="flex gap-2">
+                <div className="flex gap-0.5 mb-1">
                   <select
                     value={item.status}
                     onChange={(e) => {
@@ -778,7 +779,9 @@ export default function Home() {
                   <select
                     value={item.genre || "アニメ"}
                     onChange={(e) =>
-                      updateItem(item.id, { genre: e.target.value as Item["genre"] })
+                      updateItem(item.id, {
+                        genre: e.target.value as Item["genre"],
+                      })
                     }
                     className="text-xs border rounded px-1"
                   >
@@ -788,15 +791,11 @@ export default function Home() {
                   </select>
                 </div>
 
-                {/* ⭐評価 横一直線 */}
-                <div className="flex gap-1">
-                  <StarRating
-                    rating={item.rating}
-                    onChange={(r) => updateItem(item.id, { rating: r })}
-                  />
-                </div>
+                <StarRating
+                  rating={item.rating}
+                  onChange={(r) => updateItem(item.id, { rating: r })}
+                />
 
-                {/* コメント 横いっぱい */}
                 <textarea
                   value={item.comment}
                   onChange={(e) =>
@@ -807,13 +806,13 @@ export default function Home() {
                     )
                   }
                   onBlur={(e) => updateItem(item.id, { comment: e.target.value })}
-                  className="w-full text-xs border rounded p-1"
-                  rows={3}
+                  className="w-full text-xs mt-1 border rounded p-1"
+                  rows={4}
                 />
 
-                {/* 話数UI MAL風 */}
+                {/* 話数UI */}
                 {item.genre === "映画" ? (
-                  <div className="flex gap-1 text-xs items-center">
+                  <div className="flex items-center gap-0.5 text-xs mt-1">
                     <input
                       type="number"
                       value={item.movieOrder ?? ""}
@@ -821,20 +820,26 @@ export default function Home() {
                         setItems((prev) =>
                           prev.map((it) =>
                             it.id === item.id
-                              ? { ...it, movieOrder: e.target.value === "" ? null : Number(e.target.value) }
+                              ? {
+                                  ...it,
+                                  movieOrder:
+                                    e.target.value === "" ? null : Number(e.target.value),
+                                }
                               : it
                           )
                         )
                       }
                       onBlur={(e) =>
-                        updateItem(item.id, { movieOrder: e.target.value === "" ? null : Number(e.target.value) })
+                        updateItem(item.id, {
+                          movieOrder: e.target.value === "" ? null : Number(e.target.value),
+                        })
                       }
-                      className="w-14 border rounded px-1 text-center"
+                      className="w-16 border rounded px-1"
                     />
                     <span>作目</span>
                   </div>
                 ) : (
-                  <div className="flex gap-1 text-xs items-center">
+                  <div className="flex items-center gap-0.5 text-xs mt-1">
                     <input
                       type="number"
                       value={item.season ?? ""}
@@ -842,15 +847,21 @@ export default function Home() {
                         setItems((prev) =>
                           prev.map((it) =>
                             it.id === item.id
-                              ? { ...it, season: e.target.value === "" ? null : Number(e.target.value) }
+                              ? {
+                                  ...it,
+                                  season:
+                                    e.target.value === "" ? null : Number(e.target.value),
+                                }
                               : it
                           )
                         )
                       }
                       onBlur={(e) =>
-                        updateItem(item.id, { season: e.target.value === "" ? null : Number(e.target.value) })
+                        updateItem(item.id, {
+                          season: e.target.value === "" ? null : Number(e.target.value),
+                        })
                       }
-                      className="w-10 border rounded px-1 text-center"
+                      className="w-10 border rounded px-1"
                     />
                     <span>期</span>
 
@@ -861,17 +872,25 @@ export default function Home() {
                         setItems((prev) =>
                           prev.map((it) =>
                             it.id === item.id
-                              ? { ...it, currentEpisode: e.target.value === "" ? null : Number(e.target.value) }
+                              ? {
+                                  ...it,
+                                  currentEpisode:
+                                    e.target.value === "" ? null : Number(e.target.value),
+                                }
                               : it
                           )
                         )
                       }
                       onBlur={(e) =>
-                        updateItem(item.id, { currentEpisode: e.target.value === "" ? null : Number(e.target.value) })
+                        updateItem(item.id, {
+                          currentEpisode: e.target.value === "" ? null : Number(e.target.value),
+                        })
                       }
-                      className="w-12 border rounded px-1 text-center"
+                      className="w-12 border rounded px-1"
                     />
+
                     <span>/</span>
+
                     <input
                       type="number"
                       value={item.totalEpisode ?? ""}
@@ -879,15 +898,21 @@ export default function Home() {
                         setItems((prev) =>
                           prev.map((it) =>
                             it.id === item.id
-                              ? { ...it, totalEpisode: e.target.value === "" ? null : Number(e.target.value) }
+                              ? {
+                                  ...it,
+                                  totalEpisode:
+                                    e.target.value === "" ? null : Number(e.target.value),
+                                }
                               : it
                           )
                         )
                       }
                       onBlur={(e) =>
-                        updateItem(item.id, { totalEpisode: e.target.value === "" ? null : Number(e.target.value) })
+                        updateItem(item.id, {
+                          totalEpisode: e.target.value === "" ? null : Number(e.target.value),
+                        })
                       }
-                      className="w-14 border rounded px-1 text-center"
+                      className="w-14 border rounded px-1"
                     />
                     <span>話</span>
                   </div>
