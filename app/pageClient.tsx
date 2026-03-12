@@ -161,7 +161,7 @@ export default function Home() {
       const isCompleted = newStatus === "completed";
 
       const newItem: Omit<Item, "id"> = {
-        order: items.length,
+        order: items.length ? Math.max(...items.map(i => i.order ?? 0)) + 1 : 0,
         title: "新しい作品",
         status: newStatus,
         rating: 0,
@@ -454,7 +454,6 @@ export default function Home() {
               key={item.id}
               draggable
               onDragStart={() => handleDragStart(item.id)}
-              onDragEnd={() => setDraggingItemId(null)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDragEnd(item.id)}
               className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
@@ -715,7 +714,6 @@ export default function Home() {
               key={item.id}
               draggable
               onDragStart={() => handleDragStart(item.id)}
-              onDragEnd={() => setDraggingItemId(null)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDragEnd(item.id)}
               className="
