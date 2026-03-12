@@ -535,9 +535,9 @@ export default function Home() {
               onDragStart={(e) => handleDragStart(e, item.id)}
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
-              className={`relative bg-white rounded-xl p-3 transition-all duration-200
+              className={`relative bg-white rounded-xl p-3 transition-transform duration-200
               ${draggingItemId === item.id
-                ? "shadow-2xl scale-105 z-50 opacity-90"
+                ? "shadow-md z-50"
                 : "shadow-md hover:shadow-lg"
               }`}
             >
@@ -801,11 +801,11 @@ export default function Home() {
               onDrop={() => handleDragEnd(item.id)}
               className={`
                 relative bg-white rounded-xl
-                p-3 transition-all duration-200
+                p-3 transition-transform duration-200
                 flex gap-3 items-start justify-start w-full
                 overflow-hidden
                 ${draggingItemId === item.id
-                  ? "shadow-2xl scale-105 z-50 opacity-90"
+                  ? "shadow-md z-50"
                   : "shadow-md hover:shadow-lg"}
               `}
             >
