@@ -250,8 +250,25 @@ export default function Home() {
     handleImageUpload(id, file);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, id: string) => {
     e.preventDefault();
+
+    if (!draggingItemId || draggingItemId === id) return;
+
+    const newItems = [...items];
+
+    const fromIndex = newItems.findIndex(i => i.id === draggingItemId);
+    const toIndex = newItems.findIndex(i => i.id === id);
+
+    const [moved] = newItems.splice(fromIndex, 1);
+    newItems.splice(toIndex, 0, moved);
+
+    const updated = newItems.map((item, index) => ({
+      ...item,
+      order: index
+    }));
+
+    setItems(updated);
   };
 
   const handleDragStart = (id: string) => {
@@ -504,9 +521,13 @@ export default function Home() {
               key={item.id}
               draggable
               onDragStart={() => handleDragStart(item.id)}
-              onDragOver={(e) => e.preventDefault()}
+              onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
-              className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
+              className={`relative bg-white rounded-xl p-3 transition-all duration-200
+              ${draggingItemId === item.id
+                ? "shadow-2xl scale-105 z-50 opacity-90"
+                : "shadow-md hover:shadow-lg"
+              }`}
             >
 
               {/* ❤️ お気に入り */}
@@ -520,7 +541,7 @@ export default function Home() {
               {/* 画像 */}
               <div
                 onDrop={(e) => handleDrop(e, item.id)}
-                onDragOver={handleDragOver}
+                onDragOver={(e) => handleDragOver(e, item.id)}
                 className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400"
               >
                 {item.imageUrl ? (
@@ -764,14 +785,17 @@ export default function Home() {
               key={item.id}
               draggable
               onDragStart={() => handleDragStart(item.id)}
-              onDragOver={(e) => e.preventDefault()}
+              onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
-              className="
-                relative bg-white rounded-xl shadow-md
-                p-3 hover:shadow-lg transition
+              className={`
+                relative bg-white rounded-xl
+                p-3 transition-all duration-200
                 flex gap-3 items-start justify-start w-full
                 overflow-hidden
-              "
+                ${draggingItemId === item.id
+                  ? "shadow-2xl scale-105 z-50 opacity-90"
+                  : "shadow-md hover:shadow-lg"}
+              `}
             >
               {/* ❤️ お気に入り */}
               <button
@@ -785,7 +809,7 @@ export default function Home() {
               <div className="flex flex-col items-start flex-shrink-0">
                 <div
                   onDrop={(e) => handleDrop(e, item.id)}
-                  onDragOver={handleDragOver}
+                  onDragOver={(e) => handleDragOver(e, item.id)}
                   className="
                     w-28 h-44
                     rounded-lg overflow-hidden
