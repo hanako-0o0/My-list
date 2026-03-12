@@ -67,6 +67,7 @@ export default function Home() {
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
+  const [previousItems, setPreviousItems] = useState<Item[] | null>(null);
 
 
 
@@ -260,6 +261,8 @@ export default function Home() {
   const handleDragEnd = async (targetId: string) => {
     if (!draggingItemId || draggingItemId === targetId) return;
 
+    setPreviousItems(items);
+
     const newItems = [...items];
 
     const fromIndex = newItems.findIndex(i => i.id === draggingItemId);
@@ -281,6 +284,37 @@ export default function Home() {
     }
 
     setDraggingItemId(null);
+  };
+
+  const undoLastMove = async () => {
+    if (!previousItems) return;
+
+    setItems(previousItems);
+
+    for (const item of previousItems) {
+      const ref = doc(db, "items", item.id);
+      await updateDoc(ref, { order: item.order });
+    }
+
+    setPreviousItems(null);
+  };
+
+  const sortABC = async () => {
+    const sorted = [...items].sort((a, b) =>
+      a.title.localeCompare(b.title, "ja", { sensitivity: "base" })
+    );
+
+    const updated = sorted.map((item, index) => ({
+      ...item,
+      order: index
+    }));
+
+    setItems(updated);
+
+    for (const item of updated) {
+      const ref = doc(db, "items", item.id);
+      await updateDoc(ref, { order: item.order });
+    }
   };
 
   const handleLogout = async () => {
@@ -436,6 +470,22 @@ export default function Home() {
           }`}
         >
           横
+        </button>
+
+        {/* Undo */}
+        <button
+          onClick={undoLastMove}
+          className="px-3 py-1 rounded-full text-sm bg-yellow-400 text-white hover:bg-yellow-500"
+        >
+          ↩ 戻す
+        </button>
+
+        {/* ABC */}
+        <button
+          onClick={sortABC}
+          className="px-3 py-1 rounded-full text-sm bg-purple-400 text-white hover:bg-purple-500"
+        >
+          ABC
         </button>
       </div>
 
