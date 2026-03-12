@@ -250,28 +250,30 @@ export default function Home() {
     handleImageUpload(id, file);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, overId: string) => {
     e.preventDefault();
-
-    if (!draggingItemId || draggingItemId === id) return;
+    if (!draggingItemId || draggingItemId === overId) return;
 
     const fromIndex = items.findIndex(i => i.id === draggingItemId);
-    const toIndex = items.findIndex(i => i.id === id);
-
+    const toIndex = items.findIndex(i => i.id === overId);
     if (fromIndex === -1 || toIndex === -1) return;
 
-    const updated = [...items];
-    const [moved] = updated.splice(fromIndex, 1);
-    updated.splice(toIndex, 0, moved);
+    // 新しい順序を仮に作成
+    const newItems = items
+      .filter(i => i.id !== draggingItemId) // ドラッグ中は除外
+      .reduce<Item[]>((acc, item, idx) => {
+        if (idx === toIndex) acc.push(items[fromIndex]); // ドロップ位置でドラッグ中カードを挿入
+        acc.push(item);
+        return acc;
+      }, []);
 
-    updated.forEach((item, index) => {
-      item.order = index;
-    });
+    // ドラッグ中のカードを最後に置く場合
+    if (!newItems.includes(items[fromIndex])) newItems.push(items[fromIndex]);
 
-    setItems([...updated]);
+    // 見た目だけの順序をセット
+    setItems(newItems.map((item, index) => ({ ...item, order: index })));
   };
 
-  
   const handleDragStart = (
     e: React.DragEvent<HTMLDivElement>,
     id: string
@@ -536,10 +538,7 @@ export default function Home() {
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
               className={`relative bg-white rounded-xl p-3 transition-transform duration-200
-              ${draggingItemId === item.id
-                ? "shadow-md z-50"
-                : "shadow-md hover:shadow-lg"
-              }`}
+                ${draggingItemId === item.id ? "" : "shadow-md hover:shadow-lg"}`}
             >
 
               {/* ❤️ お気に入り */}
@@ -799,15 +798,11 @@ export default function Home() {
               onDragStart={(e) => handleDragStart(e, item.id)}
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
-              className={`
-                relative bg-white rounded-xl
+              className={`relative bg-white rounded-xl
                 p-3 transition-transform duration-200
                 flex gap-3 items-start justify-start w-full
                 overflow-hidden
-                ${draggingItemId === item.id
-                  ? "shadow-md z-50"
-                  : "shadow-md hover:shadow-lg"}
-              `}
+                ${draggingItemId === item.id ? "" : "shadow-md hover:shadow-lg"}`}
             >
               {/* ❤️ お気に入り */}
               <button
