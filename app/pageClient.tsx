@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 type Item = {
   id: string;
+  order?: number;
   title: string;
   status: "planToWatch" | "watching" | "completed" | "dropped";
   rating: number;
@@ -96,6 +97,9 @@ export default function Home() {
           id: doc.id,
           ...(doc.data() as Omit<Item, "id">),
         }));
+
+        data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
         setItems(data);
       } catch (e) {
         console.error("Failed to fetch items:", e);
@@ -138,11 +142,12 @@ export default function Home() {
       )
       .slice()
       .sort((a, b) => {
-        if (a.isNew && !b.isNew) return 1;    // 新規は最後
-        if (!a.isNew && b.isNew) return -1;
-        return a.title.localeCompare(b.title); // それ以外はタイトル順
-      });
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
 
+        return a.title.localeCompare(b.title, "ja", { sensitivity: "base" });
+      });
 
   const addItem = async () => {
     if (!userId) return;
@@ -156,6 +161,7 @@ export default function Home() {
       const isCompleted = newStatus === "completed";
 
       const newItem: Omit<Item, "id"> = {
+        order: items.length,
         title: "新しい作品",
         status: newStatus,
         rating: 0,
@@ -247,6 +253,35 @@ export default function Home() {
     e.preventDefault();
   };
 
+  const handleDragStart = (id: string) => {
+    setDraggingItemId(id);
+  };
+
+  const handleDragEnd = async (targetId: string) => {
+    if (!draggingItemId || draggingItemId === targetId) return;
+
+    const newItems = [...items];
+
+    const fromIndex = newItems.findIndex(i => i.id === draggingItemId);
+    const toIndex = newItems.findIndex(i => i.id === targetId);
+
+    const [moved] = newItems.splice(fromIndex, 1);
+    newItems.splice(toIndex, 0, moved);
+
+    const updated = newItems.map((item, index) => ({
+      ...item,
+      order: index
+    }));
+
+    setItems(updated);
+
+    for (const item of updated) {
+      const ref = doc(db, "items", item.id);
+      await updateDoc(ref, { order: item.order });
+    }
+
+    setDraggingItemId(null);
+  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -417,8 +452,14 @@ export default function Home() {
             /* ===== 通常カード（既存） ===== */
             <div
               key={item.id}
+              draggable
+              onDragStart={() => handleDragStart(item.id)}
+              onDragEnd={() => setDraggingItemId(null)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => handleDragEnd(item.id)}
               className="relative bg-white rounded-xl shadow-md p-3 hover:shadow-lg transition"
             >
+
               {/* ❤️ お気に入り */}
               <button
                 onClick={() => updateItem(item.id, { favorite: !item.favorite })}
@@ -672,6 +713,11 @@ export default function Home() {
             /* ===== 横パネル ===== */
             <div
               key={item.id}
+              draggable
+              onDragStart={() => handleDragStart(item.id)}
+              onDragEnd={() => setDraggingItemId(null)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => handleDragEnd(item.id)}
               className="
                 relative bg-white rounded-xl shadow-md
                 p-3 hover:shadow-lg transition
