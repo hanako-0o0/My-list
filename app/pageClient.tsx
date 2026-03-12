@@ -255,25 +255,37 @@ export default function Home() {
 
     if (!draggingItemId || draggingItemId === id) return;
 
-    const newItems = [...items];
+    const fromIndex = items.findIndex(i => i.id === draggingItemId);
+    const toIndex = items.findIndex(i => i.id === id);
 
-    const fromIndex = newItems.findIndex(i => i.id === draggingItemId);
-    const toIndex = newItems.findIndex(i => i.id === id);
+    if (fromIndex === -1 || toIndex === -1) return;
 
-    const [moved] = newItems.splice(fromIndex, 1);
-    newItems.splice(toIndex, 0, moved);
+    const updated = [...items];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
 
-    const updated = newItems.map((item, index) => ({
-      ...item,
-      order: index
-    }));
+    updated.forEach((item, index) => {
+      item.order = index;
+    });
 
-    setItems(updated);
+    setItems([...updated]);
   };
 
-  const handleDragStart = (id: string) => {
+  
+  const handleDragStart = (
+    e: React.DragEvent<HTMLDivElement>,
+    id: string
+  ) => {
+    setPreviousItems(items);
     setDraggingItemId(id);
+
+    const img = new Image();
+    img.src =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+
+    e.dataTransfer.setDragImage(img, 0, 0);
   };
+
 
   const handleDragEnd = async (targetId: string) => {
     if (!draggingItemId || draggingItemId === targetId) return;
@@ -520,7 +532,7 @@ export default function Home() {
             <div
               key={item.id}
               draggable
-              onDragStart={() => handleDragStart(item.id)}
+              onDragStart={(e) => handleDragStart(e, item.id)}
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
               className={`relative bg-white rounded-xl p-3 transition-all duration-200
@@ -784,7 +796,7 @@ export default function Home() {
             <div
               key={item.id}
               draggable
-              onDragStart={() => handleDragStart(item.id)}
+              onDragStart={(e) => handleDragStart(e, item.id)}
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={() => handleDragEnd(item.id)}
               className={`
