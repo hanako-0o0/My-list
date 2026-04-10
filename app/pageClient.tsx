@@ -67,7 +67,7 @@ export default function Home() {
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
-  const [history, setHistory] = useState<Item[][]>([]);
+  const [previousItems, setPreviousItems] = useState<Item[] | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
 
@@ -279,7 +279,7 @@ export default function Home() {
     e: React.DragEvent<HTMLDivElement>,
     id: string
   ) => {
-    setHistory(prev => [...prev, items]);
+    setPreviousItems(items);
     setDraggingItemId(id);
     setDragOverId(null);
 
@@ -294,7 +294,7 @@ export default function Home() {
   const handleDragEnd = async (targetId: string) => {
     if (!draggingItemId || draggingItemId === targetId) return;
 
-    setHistory(prev => [...prev, items]);
+    setPreviousItems(items);
 
     const newItems = [...items];
 
@@ -321,23 +321,16 @@ export default function Home() {
   };
 
   const undoLastMove = async () => {
-    setHistory((prev) => {
-      if (prev.length === 0) return prev;
+    if (!previousItems) return;
 
-      const newHistory = [...prev];
-      const last = newHistory.pop()!;
+    setItems(previousItems);
 
-      setItems(last);
+    for (const item of previousItems) {
+      const ref = doc(db, "items", item.id);
+      await updateDoc(ref, { order: item.order });
+    }
 
-      // Firestoreも戻す
-      last.forEach((item) => {
-        updateDoc(doc(db, "items", item.id), {
-          order: item.order,
-        });
-      });
-
-      return newHistory;
-    });
+    setPreviousItems(null);
   };
 
   const sortABC = async () => {
@@ -1078,6 +1071,8 @@ export default function Home() {
     </main>
   );
 }
+
+
 
 
 
