@@ -289,8 +289,6 @@ export default function Home() {
   const handleDragEnd = async (targetId: string) => {
     if (!draggingItemId || draggingItemId === targetId) return;
 
-    setHistory((prev) => [...prev, items]);
-
     const newItems = [...items];
 
     const fromIndex = newItems.findIndex(i => i.id === draggingItemId);
