@@ -147,6 +147,32 @@ export default function Home() {
     }
   }, [items]);
 
+  // Ctrl + Z でUndo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isUndo =
+        (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z";
+
+      if (!isUndo) return;
+
+      e.preventDefault();
+
+      // 入力中は無効
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      undoLastMove();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [history, items]);
+
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
 
