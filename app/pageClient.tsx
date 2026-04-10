@@ -560,6 +560,19 @@ export default function Home() {
           ↩ 戻す
         </button>
 
+        {/* Redo */}
+        <button
+          onClick={redoLastMove}
+          disabled={redoStack.length === 0}
+          className={`px-3 py-1 rounded-full text-sm text-white
+            ${redoStack.length === 0
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-green-400 hover:bg-green-500"}`}
+          title="Ctrl+Shift+Z"
+        >
+          ↪ やり直し
+        </button>
+
         {/* ABC */}
         <button
           onClick={sortABC}
