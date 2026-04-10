@@ -68,7 +68,7 @@ export default function Home() {
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
   const [previousItems, setPreviousItems] = useState<Item[] | null>(null);
-
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
 
   // ログイン状態チェック
@@ -252,27 +252,28 @@ export default function Home() {
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, overId: string) => {
     e.preventDefault();
+
     if (!draggingItemId || draggingItemId === overId) return;
 
-    const fromIndex = items.findIndex(i => i.id === draggingItemId);
-    const toIndex = items.findIndex(i => i.id === overId);
-    if (fromIndex === -1 || toIndex === -1) return;
-
-    // 新しい順序を仮に作成
-    const newItems = items
-      .filter(i => i.id !== draggingItemId) // ドラッグ中は除外
-      .reduce<Item[]>((acc, item, idx) => {
-        if (idx === toIndex) acc.push(items[fromIndex]); // ドロップ位置でドラッグ中カードを挿入
-        acc.push(item);
-        return acc;
-      }, []);
-
-    // ドラッグ中のカードを最後に置く場合
-    if (!newItems.includes(items[fromIndex])) newItems.push(items[fromIndex]);
-
-    // 見た目だけの順序をセット
-    setItems(newItems.map((item, index) => ({ ...item, order: index })));
+    setDragOverId(overId);
   };
+
+  const displayItems = (() => {
+    const base = filteredItems;
+
+    if (!draggingItemId || !dragOverId) return base;
+
+    const fromIndex = base.findIndex(i => i.id === draggingItemId);
+    const toIndex = base.findIndex(i => i.id === dragOverId);
+
+    if (fromIndex === -1 || toIndex === -1) return base;
+
+    const copy = [...base];
+    const [moved] = copy.splice(fromIndex, 1);
+    copy.splice(toIndex, 0, moved);
+
+    return copy;
+  })();
 
   const handleDragStart = (
     e: React.DragEvent<HTMLDivElement>,
@@ -280,6 +281,7 @@ export default function Home() {
   ) => {
     setPreviousItems(items);
     setDraggingItemId(id);
+    setDragOverId(null);
 
     const img = new Image();
     img.src =
@@ -315,6 +317,7 @@ export default function Home() {
     }
 
     setDraggingItemId(null);
+    setDragOverId(null);
   };
 
   const undoLastMove = async () => {
@@ -528,7 +531,7 @@ export default function Home() {
             : "grid grid-cols-2 xl:grid-cols-4 gap-4 justify-items-start"
         }
       >
-        {filteredItems.map((item) =>
+        {displayItems.map((item) =>
           panelType === "grid" ? (
             /* ===== 通常カード（既存） ===== */
             <div
