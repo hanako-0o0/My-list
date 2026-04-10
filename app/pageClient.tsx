@@ -250,28 +250,8 @@ export default function Home() {
     handleImageUpload(id, file);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, overId: string) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (!draggingItemId || draggingItemId === overId) return;
-
-    const fromIndex = items.findIndex(i => i.id === draggingItemId);
-    const toIndex = items.findIndex(i => i.id === overId);
-    if (fromIndex === -1 || toIndex === -1) return;
-
-    // 新しい順序を仮に作成
-    const newItems = items
-      .filter(i => i.id !== draggingItemId) // ドラッグ中は除外
-      .reduce<Item[]>((acc, item, idx) => {
-        if (idx === toIndex) acc.push(items[fromIndex]); // ドロップ位置でドラッグ中カードを挿入
-        acc.push(item);
-        return acc;
-      }, []);
-
-    // ドラッグ中のカードを最後に置く場合
-    if (!newItems.includes(items[fromIndex])) newItems.push(items[fromIndex]);
-
-    // 見た目だけの順序をセット
-    setItems(newItems.map((item, index) => ({ ...item, order: index })));
   };
 
   const handleDragStart = (
@@ -535,7 +515,7 @@ export default function Home() {
               key={item.id}
               draggable
               onDragStart={(e) => handleDragStart(e, item.id)}
-              onDragOver={(e) => handleDragOver(e, item.id)}
+              onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDragEnd(item.id)}
               className={`relative bg-white rounded-xl p-3 transition-transform duration-200
                 ${draggingItemId === item.id ? "" : "shadow-md hover:shadow-lg"}`}
@@ -552,13 +532,14 @@ export default function Home() {
               {/* 画像 */}
               <div
                 onDrop={(e) => handleDrop(e, item.id)}
-                onDragOver={(e) => handleDragOver(e, item.id)}
+                onDragOver={(e) => e.preventDefault()}
                 className="w-full aspect-[16/9] rounded-lg mb-2 overflow-hidden bg-sky-100 flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-400"
               >
                 {item.imageUrl ? (
                   <img
                     src={item.imageUrl}
                     alt={item.title}
+                    draggable={false}   // ←これ超重要
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -796,7 +777,7 @@ export default function Home() {
               key={item.id}
               draggable
               onDragStart={(e) => handleDragStart(e, item.id)}
-              onDragOver={(e) => handleDragOver(e, item.id)}
+              onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDragEnd(item.id)}
               className={`relative bg-white rounded-xl
                 p-3 transition-transform duration-200
@@ -816,7 +797,7 @@ export default function Home() {
               <div className="flex flex-col items-start flex-shrink-0">
                 <div
                   onDrop={(e) => handleDrop(e, item.id)}
-                  onDragOver={(e) => handleDragOver(e, item.id)}
+                  onDragOver={(e) => e.preventDefault()}
                   className="
                     w-28 h-44
                     rounded-lg overflow-hidden
@@ -830,6 +811,7 @@ export default function Home() {
                     <img
                       src={item.imageUrl}
                       alt={item.title}
+                      draggable={false}   // ←これ超重要
                       className="w-full h-full object-cover"
                     />
                   ) : (
