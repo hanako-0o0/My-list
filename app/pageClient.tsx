@@ -68,7 +68,7 @@ export default function Home() {
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
   const [history, setHistory] = useState<Item[][]>([]);
-
+  const [redoStack, setRedoStack] = useState<Item[][]>([]);
 
 
   // ログイン状態チェック
@@ -147,17 +147,15 @@ export default function Home() {
     }
   }, [items]);
 
-  // Ctrl + Z でUndo
+  // Ctrl + Z でUndo + redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isUndo =
-        (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z";
+        (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z";
 
-      if (!isUndo) return;
+      const isRedo =
+        (e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "z";
 
-      e.preventDefault();
-
-      // 入力中は無効
       const active = document.activeElement;
       if (
         active instanceof HTMLInputElement ||
@@ -166,12 +164,20 @@ export default function Home() {
         return;
       }
 
-      undoLastMove();
+      if (isUndo) {
+        e.preventDefault();
+        undoLastMove();
+      }
+
+      if (isRedo) {
+        e.preventDefault();
+        redoLastMove();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [history, items]);
+  }, [history, redoStack, items]);
 
   if (loading) return <div>Loading...</div>;
   if (!userId) return null;
@@ -302,6 +308,7 @@ export default function Home() {
     id: string
   ) => {
     setHistory((prev) => [...prev, items]);
+    setRedoStack([]); // ←これ追加！！！！
     setDraggingItemId(id);
 
     const img = new Image();
@@ -343,10 +350,30 @@ export default function Home() {
 
     const prev = history[history.length - 1];
 
+    // 👉 redoに現在状態を保存
+    setRedoStack((r) => [...r, items]);
+
     setItems(prev);
     setHistory((h) => h.slice(0, -1));
 
     for (const item of prev) {
+      const ref = doc(db, "items", item.id);
+      await updateDoc(ref, { order: item.order });
+    }
+  };
+
+  const redoLastMove = async () => {
+    if (redoStack.length === 0) return;
+
+    const next = redoStack[redoStack.length - 1];
+
+    // 👉 historyに現在状態を保存
+    setHistory((h) => [...h, items]);
+
+    setItems(next);
+    setRedoStack((r) => r.slice(0, -1));
+
+    for (const item of next) {
       const ref = doc(db, "items", item.id);
       await updateDoc(ref, { order: item.order });
     }
