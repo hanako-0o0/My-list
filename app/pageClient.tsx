@@ -250,11 +250,28 @@ export default function Home() {
     handleImageUpload(id, file);
   };
 
-  const [dragOverId, setDragOverId] = useState<string | null>(null);
-
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, overId: string) => {
     e.preventDefault();
-    setDragOverId(overId); // ←見た目だけ管理（重要）
+    if (!draggingItemId || draggingItemId === overId) return;
+
+    const fromIndex = items.findIndex(i => i.id === draggingItemId);
+    const toIndex = items.findIndex(i => i.id === overId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    // 新しい順序を仮に作成
+    const newItems = items
+      .filter(i => i.id !== draggingItemId) // ドラッグ中は除外
+      .reduce<Item[]>((acc, item, idx) => {
+        if (idx === toIndex) acc.push(items[fromIndex]); // ドロップ位置でドラッグ中カードを挿入
+        acc.push(item);
+        return acc;
+      }, []);
+
+    // ドラッグ中のカードを最後に置く場合
+    if (!newItems.includes(items[fromIndex])) newItems.push(items[fromIndex]);
+
+    // 見た目だけの順序をセット
+    setItems(newItems.map((item, index) => ({ ...item, order: index })));
   };
 
   const handleDragStart = (
@@ -275,6 +292,8 @@ export default function Home() {
   const handleDragEnd = async (targetId: string) => {
     if (!draggingItemId || draggingItemId === targetId) return;
 
+    setPreviousItems(items);
+
     const newItems = [...items];
 
     const fromIndex = newItems.findIndex(i => i.id === draggingItemId);
@@ -288,10 +307,11 @@ export default function Home() {
       order: index
     }));
 
-    setItems(updated); // ←ここだけでOK（1回だけ更新）
+    setItems(updated);
 
     for (const item of updated) {
-      await updateDoc(doc(db, "items", item.id), { order: item.order });
+      const ref = doc(db, "items", item.id);
+      await updateDoc(ref, { order: item.order });
     }
 
     setDraggingItemId(null);
@@ -539,8 +559,7 @@ export default function Home() {
                   <img
                     src={item.imageUrl}
                     alt={item.title}
-                    draggable={false}
-                    className="w-full h-full object-cover transform-gpu"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   "ここに画像"
@@ -811,8 +830,7 @@ export default function Home() {
                     <img
                       src={item.imageUrl}
                       alt={item.title}
-                      draggable={false}
-                      className="w-full h-full object-cover transform-gpu"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     "+ 画像追加"
