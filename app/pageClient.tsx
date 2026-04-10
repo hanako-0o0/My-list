@@ -67,7 +67,7 @@ export default function Home() {
   const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [panelType, setPanelType] = useState<"grid" | "wide">("grid");
-  const [previousItems, setPreviousItems] = useState<Item[] | null>(null);
+  const [history, setHistory] = useState<Item[][]>([]);
 
 
 
@@ -99,9 +99,26 @@ export default function Home() {
           ...(doc.data() as Omit<Item, "id">),
         }));
 
-        data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        // orderがない場合はABCで並べる
+        const hasOrder = data.some(item => item.order !== undefined);
 
-        setItems(data);
+        let sorted;
+
+        if (hasOrder) {
+          sorted = data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        } else {
+          sorted = data.sort((a, b) =>
+            a.title.localeCompare(b.title, "ja", { sensitivity: "base" })
+          );
+
+          // Firestoreにも保存
+          for (let i = 0; i < sorted.length; i++) {
+            const ref = doc(db, "items", sorted[i].id);
+            await updateDoc(ref, { order: i });
+          }
+        }
+
+        setItems(sorted);
       } catch (e) {
         console.error("Failed to fetch items:", e);
       }
@@ -258,7 +275,7 @@ export default function Home() {
     e: React.DragEvent<HTMLDivElement>,
     id: string
   ) => {
-    setPreviousItems(items);
+    setHistory((prev) => [...prev, items]);
     setDraggingItemId(id);
 
     const img = new Image();
@@ -272,7 +289,7 @@ export default function Home() {
   const handleDragEnd = async (targetId: string) => {
     if (!draggingItemId || draggingItemId === targetId) return;
 
-    setPreviousItems(items);
+    setHistory((prev) => [...prev, items]);
 
     const newItems = [...items];
 
@@ -298,16 +315,17 @@ export default function Home() {
   };
 
   const undoLastMove = async () => {
-    if (!previousItems) return;
+    if (history.length === 0) return;
 
-    setItems(previousItems);
+    const prev = history[history.length - 1];
 
-    for (const item of previousItems) {
+    setItems(prev);
+    setHistory((h) => h.slice(0, -1));
+
+    for (const item of prev) {
       const ref = doc(db, "items", item.id);
       await updateDoc(ref, { order: item.order });
     }
-
-    setPreviousItems(null);
   };
 
   const sortABC = async () => {
